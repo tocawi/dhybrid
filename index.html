@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rabies Vaccination Campaign Dashboard - ToCAWI</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --tocawi-orange: #dc640d;
+            --tocawi-orange-hover: #c5570b;
+            --tocawi-green: #457a00;
+            --tocawi-green-hover: #3b6800;
+            --tocawi-blue: #3a5cbf;
+            --tocawi-blue-hover: #2f4ca8;
+            --dark: #1e293b;
+            --bg: #f6f4ee;
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
+            --border: #cbd5e1;
+            --border-light: #e2e8f0;
+            --text: #4a4a4a;
+            --text-secondary: #555555;
+            --text-muted: #64748b;
+            --red: #dc2626;
+            --red-bg: #ffe4e6;
+            --red-text: #9f1239;
+            --radius: 12px;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- ToCAWI Header --- */
+        .site-header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .header-logo-img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--tocawi-blue);
+            line-height: 1.1;
+        }
+
+        .logo-text p {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .desktop-nav {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--tocawi-orange);
+        }
+
+        .global-floating-donate-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: var(--tocawi-orange);
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(220, 100, 13, 0.3);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+        .global-floating-donate-btn:hover { transform: translateY(-2px); background-color: var(--tocawi-orange-hover); }
+
+        /* --- Main Layout & Containers --- */
+        .container {
+            max-width: 1380px;
+            margin: 24px auto;
+            padding: 0 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            background: linear-gradient(135deg, var(--tocawi-blue) 0%, #254090 100%);
+            color: #ffffff;
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .hero-banner h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; }
+        .hero-banner p { font-size: 0.9rem; opacity: 0.9; }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; background-color: #34d399; }
+
+        .btn-header {
+            background-color: #ffffff;
+            color: var(--tocawi-blue);
+            border: none;
+            font-weight: 700;
+            font-size: 0.78rem;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-header:hover { background-color: #f1f5f9; }
+
+        .btn-header-outline {
+            background-color: transparent;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 7px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-header-outline:hover { background-color: rgba(255, 255, 255, 0.15); }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            padding: 18px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+        }
+
+        .kpi-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .kpi-num {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-top: 4px;
+            color: var(--text);
+        }
+
+        .kpi-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+        .c-green { color: var(--tocawi-green); }
+        .c-orange { color: var(--tocawi-orange); }
+        .c-blue { color: var(--tocawi-blue); }
+
+        /* Ward Strip */
+        .ward-strip {
+            background: var(--surface);
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .ward-strip-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .ward-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+
+        .ward-pill {
+            background: var(--surface-alt);
+            border: 1px solid var(--border-light);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        .ward-pill strong { color: var(--tocawi-green); margin-left: 4px; }
+
+        /* Workspace Grid */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 1080px) {
+            .workspace { grid-template-columns: 480px 1fr; align-items: start; }
+        }
+
+        .panel {
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .panel-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+
+        .edit-banner {
+            display: none;
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .edit-banner.active { display: flex; }
+
+        .btn-cancel-edit {
+            background: none;
+            border: none;
+            color: #92400e;
+            text-decoration: underline;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .section-tag {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--tocawi-orange);
+            margin: 16px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px dashed var(--border-light);
+        }
+        .section-tag:first-of-type { margin-top: 0; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        @media (min-width: 520px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+        .field { margin-bottom: 12px; }
+        .grid-2 .field { margin-bottom: 0; }
+
+        label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .req { color: var(--red); margin-left: 2px; }
+
+        .mini-link {
+            background: none;
+            border: none;
+            color: var(--tocawi-blue);
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        input[type="text"], input[type="tel"], select, textarea {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            color: var(--text);
+            background-color: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[readonly] { background-color: var(--surface-alt); color: var(--text-secondary); font-weight: 600; }
+        input:focus, select:focus, textarea:focus { border-color: var(--tocawi-blue); box-shadow: 0 0 0 3px rgba(58, 92, 191, 0.15); }
+        .hidden { display: none !important; }
+
+        /* GPS Panel */
+        .gps-panel {
+            background-color: var(--surface-alt);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .gps-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .gps-top span { font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); }
+
+        .btn-gps {
+            background-color: var(--tocawi-green);
+            color: #ffffff;
+            border: none;
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 6px 11px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-gps:hover { background-color: var(--tocawi-green-hover); }
+
+        .gps-coords { display: grid; grid-template-columns: 1fr 1fr 85px; gap: 8px; }
+        .gps-coords input { font-size: 0.78rem; padding: 7px 9px; font-family: monospace; }
+        .gps-msg { font-size: 0.71rem; color: var(--text-muted); margin-top: 6px; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+        @media (min-width: 520px) { .btn-group { flex-direction: row; } }
+
+        .btn {
+            flex: 1;
+            padding: 12px 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save { background-color: var(--tocawi-green); color: #ffffff; }
+        .btn-save:hover { background-color: var(--tocawi-green-hover); }
+
+        .btn-add-another { background-color: var(--dark); color: #ffffff; font-size: 0.78rem; }
+        .btn-add-another:hover { background-color: #0f172a; }
+
+        /* Filter & Table Section */
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+        .filter-bar input { flex: 1; min-width: 180px; padding: 8px 11px; font-size: 0.8rem; }
+        .filter-bar select { width: auto; padding: 8px 10px; font-size: 0.8rem; }
+
+        .table-scroll { overflow-x: auto; border: 1px solid var(--border-light); border-radius: 8px; max-height: 450px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.79rem; text-align: left; }
+        thead { background-color: var(--surface-alt); border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 10; }
+        th { padding: 11px; font-size: 0.69rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); white-space: nowrap; }
+        td { padding: 11px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+        tbody tr:hover { background-color: #f8fafc; }
+
+        .t-bold { font-weight: 700; color: var(--text); }
+        .t-sub { font-size: 0.73rem; color: var(--text-muted); }
+        .t-desc { max-width: 210px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .t-mono { font-family: monospace; font-size: 0.71rem; color: var(--text-secondary); white-space: nowrap; }
+
+        .pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.69rem; font-weight: 700; white-space: nowrap; }
+        .pill-vaccinated { background: #d1fae5; color: #047857; }
+        .pill-pending { background: #fef3c7; color: #92400e; }
+        .pill-booster { background: #dbeafe; color: #1e40af; }
+        .pill-deferred { background: #ffe4e6; color: #9f1239; }
+
+        .row-actions { display: flex; gap: 8px; justify-content: flex-end; white-space: nowrap; }
+        .btn-act { background: none; border: none; font-size: 0.74rem; font-weight: 700; cursor: pointer; }
+        .btn-edit { color: var(--tocawi-blue); }
+        .btn-del { color: var(--red); }
+
+        /* Map Panel */
+        .map-panel { margin-top: 20px; background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-light); box-shadow: var(--shadow); }
+        #map { height: 350px; width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; }
+
+        /* Footer */
+        .site-footer {
+            background-color: #1e293b;
+            color: #fff;
+            padding: 40px 20px 20px 20px;
+            margin-top: 40px;
+            text-align: center;
+        }
+        .footer-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        .footer-social-wrapper { display: flex; gap: 15px; margin: 10px 0; }
+        .social-icon { color: #fff; background: rgba(255,255,255,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: background 0.2s; }
+        .social-icon:hover { background: var(--tocawi-orange); }
+        .footer-copyright { font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="index.html" class="logo-area">
+                <img src="images/logo.png" alt="ToCAWI Logo" class="header-logo-img" onerror="this.src='https://via.placeholder.com/45?text=ToCAWI'">
+                <div class="logo-text">
+                    <h1>ToCAWI</h1>
+                    <p>Tails of Care Animal Welfare Initiative</p>
+                </div>
+            </a>
+            <nav class="desktop-nav">
+                <a href="index.html" class="nav-link active">Rabies Dashboard</a>
+                <a href="programs.html" class="nav-link">Our Programs</a>
+                <a href="partners.html" class="nav-link">Partners</a>
+                <a href="contact.html" class="nav-link">Contact Us</a>
+            </nav>
+        </div>
+    </header>
+
+    <a href="#campaignForm" class="global-floating-donate-btn" aria-label="Add Record">
+        <i class="fa-solid fa-syringe"></i> New Record
+    </a>
+
+    <div class="container">
+        
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <div>
+                <h2>Kibwezi East Rabies Vaccination Campaign</h2>
+                <p>Makueni County Directorate of Veterinary Services &bull; Field Data Collection System</p>
+            </div>
+            <div class="header-controls">
+                <span class="status-pill"><span class="dot"></span> <span id="syncStatus">Connected to Sheets DB</span></span>
+                <button type="button" class="btn-header-outline" onclick="loadCloudData()">&#8635; Refresh Data</button>
+                <button type="button" class="btn-header" onclick="exportCSV()">&#11015; Export CSV</button>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">Total Dogs Recorded</div>
+                <div id="kpiTotal" class="kpi-num">0</div>
+                <div class="kpi-sub">Across Kibwezi East</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Vaccinated</div>
+                <div id="kpiVaccinated" class="kpi-num c-green">0</div>
+                <div class="kpi-sub">Immunized this drive</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Pending / Booster Due</div>
+                <div id="kpiPending" class="kpi-num c-orange">0</div>
+                <div class="kpi-sub">Requires follow-up</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Deferred</div>
+                <div id="kpiDeferred" class="kpi-num">0</div>
+                <div class="kpi-sub">Sick / Pregnant / Underage</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Vaccination Coverage</div>
+                <div id="kpiCoverage" class="kpi-num c-blue">0%</div>
+                <div class="kpi-sub">Target: &ge; 70% WHO threshold</div>
+            </div>
+        </section>
+
+        <!-- Ward Strip -->
+        <section class="ward-strip">
+            <span class="ward-strip-label">Ward Breakdown:</span>
+            <div class="ward-pills">
+                <span class="ward-pill">Masongaleni: <strong id="countMasongaleni">0</strong></span>
+                <span class="ward-pill">Mtito Andei: <strong id="countMtito">0</strong></span>
+                <span class="ward-pill">Thange: <strong id="countThange">0</strong></span>
+                <span class="ward-pill">Ivingoni/Nzambani: <strong id="countIvingoni">0</strong></span>
+            </div>
+        </section>
+
+        <div class="workspace">
+            <!-- Form Panel -->
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 id="formHeading">Record Homestead &amp; Dog</h2>
+                </div>
+
+                <div id="editBanner" class="edit-banner">
+                    <span>Editing existing record</span>
+                    <button type="button" class="btn-cancel-edit" onclick="cancelEdit()">Cancel Edit</button>
+                </div>
+
+                <form id="campaignForm">
+                    <input type="hidden" id="editingId" value="" />
+
+                    <div class="section-tag">1. Administrative Location</div>
+
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="subcounty">Sub-County</label>
+                            <input type="text" id="subcounty" value="Kibwezi East" readonly />
+                        </div>
+                        <div class="field">
+                            <label for="ward">Ward <span class="req">*</span></label>
+                            <select id="ward" required onchange="handleWardChange()">
+                                <option value="">-- Select Ward --</option>
+                                <option value="Masongaleni">Masongaleni</option>
+                                <option value="Mtito Andei">Mtito Andei</option>
+                                <option value="Thange">Thange</option>
+                                <option value="Ivingoni/Nzambani">Ivingoni/Nzambani</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="location">Location <span class="req">*</span></label>
+                            <select id="location" required onchange="handleLocationChange()">
+                                <option value="">-- Select Ward First --</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="villageLandmark">Village / Nearest Landmark</label>
+                            <input type="text" id="villageLandmark" placeholder="e.g. Near Kambu Primary" />
+                        </div>
+                    </div>
+
+                    <div id="customLocationWrap" class="field hidden">
+                        <label for="customLocation">Specify Custom Location <span class="req">*</span></label>
+                        <input type="text" id="customLocation" placeholder="Enter location name" />
+                    </div>
+
+                    <div class="section-tag">2. Owner &amp; Homestead Geo Coordinates</div>
+
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="ownerName">Name of Owner <span class="req">*</span></label>
+                            <input type="text" id="ownerName" required placeholder="e.g. Mutua Musyoka" />
+                        </div>
+                        <div class="field">
+                            <label for="ownerContact">Owner Contact <span class="req">*</span></label>
+                            <input type="tel" id="ownerContact" required pattern="^(\+254|0)\d{9}$"
+                                title="Enter a valid Kenyan mobile number (e.g. 0712345678 or +254712345678)"
+                                placeholder="0712345678" />
+                        </div>
+                    </div>
+
+                    <div class="gps-panel">
+                        <div class="gps-top">
+                            <span>Homestead GPS Coordinates <span class="req">*</span></span>
+                            <button type="button" class="btn-gps" onclick="captureGPS()">&#128205; Capture GPS</button>
+                        </div>
+                        <div class="gps-coords">
+                            <input type="text" id="latitude" required placeholder="Lat (-2.4167)" />
+                            <input type="text" id="longitude" required placeholder="Lng (37.9667)" />
+                            <input type="text" id="gpsAccuracy" readonly placeholder="Acc (m)" title="GPS accuracy in meters" />
+                        </div>
+                        <div id="gpsMsg" class="gps-msg">Tap Capture GPS while standing at the homestead.</div>
+                    </div>
+
+                    <div class="section-tag">3. Dog &amp; Vaccination Details</div>
+
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="dogName">
+                                <span>Name of Dog <span class="req">*</span></span>
+                                <button type="button" class="mini-link" onclick="setUnnamedDog()">Set "Unnamed"</button>
+                            </label>
+                            <input type="text" id="dogName" required placeholder="e.g. Simba" />
+                        </div>
+                        <div class="field">
+                            <label for="vaccinationStatus">Vaccination Status <span class="req">*</span></label>
+                            <select id="vaccinationStatus" required onchange="handleStatusChange()">
+                                <option value="Vaccinated">Vaccinated</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Booster Due">Booster Due</option>
+                                <option value="Deferred">Deferred (Sick/Pregnant)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="dogDescription">Dog Description (Sex, Age, Breed, Coat Colour/Markings) <span class="req">*</span></label>
+                        <textarea id="dogDescription" rows="2" required placeholder="e.g. Adult Male, Local breed, Brown with white chest patch"></textarea>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="certificateNo">Certificate No. <span id="certReqMark" class="req">*</span></label>
+                            <input type="text" id="certificateNo" required placeholder="e.g. MKN-KE-00142" />
+                        </div>
+                        <div class="field">
+                            <label for="vaccineBatchNo">Vaccine Batch No. (Sticky)</label>
+                            <input type="text" id="vaccineBatchNo" placeholder="e.g. RAB-2026-09B" />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="recordedBy">Recorded By (Enumerator / Officer)</label>
+                        <input type="text" id="recordedBy" placeholder="e.g. Dr. Kamau / AHA Wambua" />
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" id="btnSubmit" class="btn btn-save">Save &amp; Sync Record</button>
+                        <button type="button" id="btnAddAnother" class="btn btn-add-another" onclick="saveAndAddAnotherDog()">
+                            + Save &amp; Add Dog (Same Owner)
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Records & Search Panel -->
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>Campaign Records (<span id="shownCount">0</span> of <span id="totalCountBadge">0</span>)</h2>
+                </div>
+
+                <div class="filter-bar">
+                    <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search owner, contact, dog, village, cert no..." />
+                    <select id="filterWard" onchange="renderTable()">
+                        <option value="">All Wards</option>
+                        <option value="Masongaleni">Masongaleni</option>
+                        <option value="Mtito Andei">Mtito Andei</option>
+                        <option value="Thange">Thange</option>
+                        <option value="Ivingoni/Nzambani">Ivingoni/Nzambani</option>
+                    </select>
+                    <select id="filterStatus" onchange="renderTable()">
+                        <option value="">All Statuses</option>
+                        <option value="Vaccinated">Vaccinated</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Booster Due">Booster Due</option>
+                        <option value="Deferred">Deferred</option>
+                    </select>
+                </div>
+
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ward / Location</th>
+                                <th>Owner &amp; Contact</th>
+                                <th>Dog &amp; Description</th>
+                                <th>GPS Coordinates</th>
+                                <th>Status &amp; Cert</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- Geographic Distribution Map -->
+        <section class="map-panel">
+            <div class="panel-header">
+                <h2>Campaign Geographic Distribution</h2>
+            </div>
+            <div id="map"></div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <h3>ToCAWI</h3>
+            <p>Tails of Care Animal Welfare Initiative &bull; Upperhill Gardens, Nairobi, Kenya</p>
+            <div class="footer-social-wrapper">
+                <a href="https://www.facebook.com/people/Tails-of-Care-Animal-Welfare-Initiative/61591902594842/" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/thetailsofcare" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://x.com/tailsofcare" class="social-icon" aria-label="X Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/the-tails-of-care-92ab443bb/" class="social-icon" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            <div class="footer-copyright">
+                &copy; 2026 ToCAWI. All rights reserved. Registration Number: PBO/2026/NL-EEUW5E4
+            </div>
+        </div>
+    </footer>
+
+    <!-- Leaflet & App Script -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // REPLACE WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyGjqvIxO_jRdH4fM6snzNTB-82bnWxtp3TG9XALtQeTpAuHygYP0Xp3qni8vi60I-I/exec";
+
+        const KIBWEZI_EAST_WARDS = {
+            "Masongaleni": ["Masimbani", "Ulilinzi", "Kyanguli", "Masongaleni", "Mukaange"],
+            "Mtito Andei": ["Kiteng'ei", "Kambu", "Kathekani", "Mtito Andei"],
+            "Thange": ["Utithi", "Mikuyuni", "Thange", "Kinyambu"],
+            "Ivingoni/Nzambani": ["Mang'elete", "Muthingiini", "Ivingoni", "Nzambani"]
+        };
+
+        const STORAGE_KEY = "tocawi_kibwezi_rabies_records";
+        const STICKY_KEY = "tocawi_kibwezi_sticky_meta";
+
+        let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        
+        // Initialize Map
+        const map = L.map('map').setView([-2.4167, 37.9667], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        let markersLayer = L.layerGroup().addTo(map);
+
+        function loadStickyFields() {
+            const sticky = JSON.parse(localStorage.getItem(STICKY_KEY)) || {};
+            if (sticky.vaccineBatchNo) document.getElementById("vaccineBatchNo").value = sticky.vaccineBatchNo;
+            if (sticky.recordedBy) document.getElementById("recordedBy").value = sticky.recordedBy;
+        }
+
+        function saveStickyFields() {
+            localStorage.setItem(STICKY_KEY, JSON.stringify({
+                vaccineBatchNo: document.getElementById("vaccineBatchNo").value.trim(),
+                recordedBy: document.getElementById("recordedBy").value.trim()
+            }));
+        }
+
+        function handleWardChange(preselectLocation = "") {
+            const ward = document.getElementById("ward").value;
+            const locSelect = document.getElementById("location");
+            locSelect.innerHTML = '<option value="">-- Select Location --</option>';
+
+            if (ward && KIBWEZI_EAST_WARDS[ward]) {
+                KIBWEZI_EAST_WARDS[ward].forEach(loc => {
+                    const opt = document.createElement("option");
+                    opt.value = loc;
+                    opt.textContent = loc;
+                    locSelect.appendChild(opt);
+                });
+                const otherOpt = document.createElement("option");
+                otherOpt.value = "OTHER";
+                otherOpt.textContent = "Other / Custom Location...";
+                locSelect.appendChild(otherOpt);
+            }
+
+            if (preselectLocation) {
+                const exists = Array.from(locSelect.options).some(o => o.value === preselectLocation);
+                if (exists) {
+                    locSelect.value = preselectLocation;
+                } else if (ward) {
+                    locSelect.value = "OTHER";
+                    document.getElementById("customLocation").value = preselectLocation;
+                }
+            }
+            handleLocationChange();
+        }
+
+        function handleLocationChange() {
+            const val = document.getElementById("location").value;
+            const wrap = document.getElementById("customLocationWrap");
+            const input = document.getElementById("customLocation");
+            if (val === "OTHER") {
+                wrap.classList.remove("hidden");
+                input.required = true;
+            } else {
+                wrap.classList.add("hidden");
+                input.required = false;
+                input.value = "";
+            }
+        }
+
+        function handleStatusChange() {
+            const status = document.getElementById("vaccinationStatus").value;
+            const certInput = document.getElementById("certificateNo");
+            const reqMark = document.getElementById("certReqMark");
+            if (status === "Vaccinated") {
+                certInput.required = true;
+                reqMark.classList.remove("hidden");
+            } else {
+                certInput.required = false;
+                reqMark.classList.add("hidden");
+            }
+        }
+
+        function setUnnamedDog() {
+            document.getElementById("dogName").value = "Unnamed";
+        }
+
+        function captureGPS() {
+            const msg = document.getElementById("gpsMsg");
+            if (!navigator.geolocation) {
+                msg.textContent = "Geolocation is not supported on this device.";
+                msg.style.color = "var(--red)";
+                return;
+            }
+            msg.textContent = "Acquiring GPS satellite coordinates...";
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const acc = Math.round(pos.coords.accuracy);
+                    document.getElementById("latitude").value = pos.coords.latitude.toFixed(6);
+                    document.getElementById("longitude").value = pos.coords.longitude.toFixed(6);
+                    document.getElementById("gpsAccuracy").value = acc + "m";
+                    msg.textContent = "GPS locked (+/- " + acc + "m accuracy).";
+                    msg.style.color = acc <= 25 ? "var(--tocawi-green)" : "var(--tocawi-orange)";
+                },
+                (err) => {
+                    msg.textContent = "GPS unavailable (" + err.message + "). Enter manually.";
+                    msg.style.color = "var(--red)";
+                },
+                { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+            );
+        }
+
+        function buildRecordFromForm() {
+            const locVal = document.getElementById("location").value;
+            const finalLocation = locVal === "OTHER" ? document.getElementById("customLocation").value.trim() : locVal;
+            const existingId = document.getElementById("editingId").value;
+
+            return {
+                id: existingId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+                subcounty: "Kibwezi East",
+                ward: document.getElementById("ward").value,
+                location: finalLocation,
+                villageLandmark: document.getElementById("villageLandmark").value.trim(),
+                ownerName: document.getElementById("ownerName").value.trim(),
+                ownerContact: document.getElementById("ownerContact").value.trim(),
+                latitude: document.getElementById("latitude").value.trim(),
+                longitude: document.getElementById("longitude").value.trim(),
+                gpsAccuracy: document.getElementById("gpsAccuracy").value.trim(),
+                dogName: document.getElementById("dogName").value.trim(),
+                dogDescription: document.getElementById("dogDescription").value.trim(),
+                vaccinationStatus: document.getElementById("vaccinationStatus").value,
+                certificateNo: document.getElementById("certificateNo").value.trim(),
+                vaccineBatchNo: document.getElementById("vaccineBatchNo").value.trim(),
+                recordedBy: document.getElementById("recordedBy").value.trim(),
+                createdAt: new Date().toISOString()
+            };
+        }
+
+        function saveToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+            saveStickyFields();
+            refreshDashboard();
+        }
+
+        // Form Submit Handler (Syncs to Google Sheets via GAS)
+        document.getElementById("campaignForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const record = buildRecordFromForm();
+            const editingId = document.getElementById("editingId").value;
+
+            if (editingId) {
+                const idx = records.findIndex(r => r.id === editingId);
+                if (idx !== -1) records[idx] = record;
+                cancelEdit(false);
+            } else {
+                records.unshift(record);
+            }
+
+            saveToStorage();
+            resetFullForm();
+            sendRecordToCloud(record);
+            document.getElementById("gpsMsg").textContent = "Record saved and synced!";
+        });
+
+        function saveAndAddAnotherDog() {
+            const form = document.getElementById("campaignForm");
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+            const record = buildRecordFromForm();
+            records.unshift(record);
+            saveToStorage();
+            sendRecordToCloud(record);
+
+            document.getElementById("dogName").value = "";
+            document.getElementById("dogDescription").value = "";
+            document.getElementById("certificateNo").value = "";
+            document.getElementById("vaccinationStatus").value = "Vaccinated";
+            handleStatusChange();
+            document.getElementById("dogName").focus();
+            document.getElementById("gpsMsg").textContent = "Saved! Owner & GPS kept for next dog.";
+        }
+
+        function sendRecordToCloud(record) {
+            if (GAS_WEB_APP_URL.includes("YOUR_GAS_WEB_APP_URL")) return;
+            fetch(GAS_WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(record)
+            }).catch(err => console.error("Cloud sync error:", err));
+        }
+
+        function loadCloudData() {
+            if (GAS_WEB_APP_URL.includes("YOUR_GAS_WEB_APP_URL")) {
+                refreshDashboard();
+                return;
+            }
+            document.getElementById("syncStatus").textContent = "Syncing with Sheets...";
+            fetch(GAS_WEB_APP_URL)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.records && data.records.length > 0) {
+                        records = data.records;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                    }
+                    document.getElementById("syncStatus").textContent = "Connected to Sheets DB";
+                    refreshDashboard();
+                })
+                .catch(err => {
+                    console.error("Fetch cloud error:", err);
+                    document.getElementById("syncStatus").textContent = "Offline (Local DB)";
+                    refreshDashboard();
+                });
+        }
+
+        function resetFullForm() {
+            document.getElementById("campaignForm").reset();
+            document.getElementById("editingId").value = "";
+            document.getElementById("subcounty").value = "Kibwezi East";
+            handleWardChange();
+            handleStatusChange();
+            loadStickyFields();
+        }
+
+        function startEdit(id) {
+            const rec = records.find(r => r.id === id);
+            if (!rec) return;
+
+            document.getElementById("editingId").value = rec.id;
+            document.getElementById("ward").value = rec.ward;
+            handleWardChange(rec.location);
+            document.getElementById("villageLandmark").value = rec.villageLandmark || "";
+            document.getElementById("ownerName").value = rec.ownerName;
+            document.getElementById("ownerContact").value = rec.ownerContact;
+            document.getElementById("latitude").value = rec.latitude;
+            document.getElementById("longitude").value = rec.longitude;
+            document.getElementById("gpsAccuracy").value = rec.gpsAccuracy || "";
+            document.getElementById("dogName").value = rec.dogName;
+            document.getElementById("dogDescription").value = rec.dogDescription;
+            document.getElementById("vaccinationStatus").value = rec.vaccinationStatus;
+            handleStatusChange();
+            document.getElementById("certificateNo").value = rec.certificateNo || "";
+            document.getElementById("vaccineBatchNo").value = rec.vaccineBatchNo || "";
+            document.getElementById("recordedBy").value = rec.recordedBy || "";
+
+            document.getElementById("formHeading").textContent = "Update Dog Record";
+            document.getElementById("btnSubmit").textContent = "Update Record";
+            document.getElementById("btnAddAnother").classList.add("hidden");
+            document.getElementById("editBanner").classList.add("active");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function cancelEdit(shouldReset = true) {
+            document.getElementById("formHeading").textContent = "Record Homestead & Dog";
+            document.getElementById("btnSubmit").textContent = "Save & Sync Record";
+            document.getElementById("btnAddAnother").classList.remove("hidden");
+            document.getElementById("editBanner").classList.remove("active");
+            if (shouldReset) resetFullForm();
+        }
+
+        function deleteRecord(id) {
+            if (!confirm("Are you sure you want to delete this record?")) return;
+            records = records.filter(r => r.id !== id);
+            if (document.getElementById("editingId").value === id) cancelEdit();
+            saveToStorage();
+        }
+
+        function updateKPIs() {
+            const total = records.length;
+            const vaccinated = records.filter(r => r.vaccinationStatus === "Vaccinated").length;
+            const pending = records.filter(r => r.vaccinationStatus === "Pending" || r.vaccinationStatus === "Booster Due").length;
+            const deferred = records.filter(r => r.vaccinationStatus === "Deferred").length;
+            const coverage = total > 0 ? Math.round((vaccinated / total) * 100) : 0;
+
+            document.getElementById("kpiTotal").textContent = total;
+            document.getElementById("kpiVaccinated").textContent = vaccinated;
+            document.getElementById("kpiPending").textContent = pending;
+            document.getElementById("kpiDeferred").textContent = deferred;
+            document.getElementById("kpiCoverage").textContent = coverage + "%";
+            document.getElementById("totalCountBadge").textContent = total;
+
+            document.getElementById("countMasongaleni").textContent = records.filter(r => r.ward === "Masongaleni").length;
+            document.getElementById("countMtito").textContent = records.filter(r => r.ward === "Mtito Andei").length;
+            document.getElementById("countThange").textContent = records.filter(r => r.ward === "Thange").length;
+            document.getElementById("countIvingoni").textContent = records.filter(r => r.ward === "Ivingoni/Nzambani").length;
+        }
+
+        function getStatusPill(status) {
+            const classes = {
+                "Vaccinated": "pill-vaccinated",
+                "Pending": "pill-pending",
+                "Booster Due": "pill-booster",
+                "Deferred": "pill-deferred"
+            };
+            return '<span class="pill ' + (classes[status] || '') + '">' + status + '</span>';
+        }
+
+        function renderTable() {
+            const q = document.getElementById("searchInput").value.toLowerCase().trim();
+            const fWard = document.getElementById("filterWard").value;
+            const fStatus = document.getElementById("filterStatus").value;
+
+            const filtered = records.filter(r => {
+                const matchQ = !q || [
+                    r.ownerName, r.ownerContact, r.dogName, r.location,
+                    r.villageLandmark, r.certificateNo, r.dogDescription
+                ].some(val => (val || "").toLowerCase().includes(q));
+                const matchWard = !fWard || r.ward === fWard;
+                const matchStatus = !fStatus || r.vaccinationStatus === fStatus;
+                return matchQ && matchWard && matchStatus;
+            });
+
+            document.getElementById("shownCount").textContent = filtered.length;
+            const tbody = document.getElementById("recordsBody");
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No records match your current filter.</td></tr>';
+                markersLayer.clearLayers();
+                return;
+            }
+
+            markersLayer.clearLayers();
+            const mapBounds = [];
+
+            tbody.innerHTML = filtered.map(r => {
+                const landmarkText = r.villageLandmark ? " &bull; " + r.villageLandmark : "";
+                const accText = r.gpsAccuracy ? '<div class="t-sub">&plusmn;' + r.gpsAccuracy + '</div>' : "";
+                const certText = r.certificateNo ? '<div class="t-sub" style="margin-top:3px;">Cert: ' + r.certificateNo + '</div>' : "";
+
+                const lat = parseFloat(r.latitude);
+                const lng = parseFloat(r.longitude);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    mapBounds.push([lat, lng]);
+                    L.circleMarker([lat, lng], {
+                        radius: 6,
+                        color: r.vaccinationStatus === 'Vaccinated' ? '#457a00' : '#dc640d',
+                        fillColor: r.vaccinationStatus === 'Vaccinated' ? '#457a00' : '#dc640d',
+                        fillOpacity: 0.8,
+                        weight: 1
+                    }).bindPopup(`<b>${r.dogName}</b> (${r.ownerName})<br>Status: ${r.vaccinationStatus}`).addTo(markersLayer);
+                }
+
+                return '<tr>' +
+                    '<td><div class="t-bold">' + r.ward + '</div><div class="t-sub">' + r.location + landmarkText + '</div></td>' +
+                    '<td><div class="t-bold">' + r.ownerName + '</div><div class="t-sub">' + r.ownerContact + '</div></td>' +
+                    '<td><div class="t-bold">' + r.dogName + '</div><div class="t-sub t-desc" title="' + r.dogDescription + '">' + r.dogDescription + '</div></td>' +
+                    '<td class="t-mono">' + r.latitude + ',<br/>' + r.longitude + accText + '</td>' +
+                    '<td>' + getStatusPill(r.vaccinationStatus) + certText + '</td>' +
+                    '<td><div class="row-actions">' +
+                        '<button type="button" class="btn-act btn-edit" onclick="startEdit(\'' + r.id + '\')">Edit</button>' +
+                        '<button type="button" class="btn-act btn-del" onclick="deleteRecord(\'' + r.id + '\')">Delete</button>' +
+                    '</div></td>' +
+                '</tr>';
+            }).join("");
+
+            if (mapBounds.length > 0) {
+                map.fitBounds(L.latLngBounds(mapBounds), { maxZoom: 13, padding: [20, 20] });
+            }
+        }
+
+        function exportCSV() {
+            if (records.length === 0) { alert("No records available to export."); return; }
+            const headers = [
+                "Record ID", "Subcounty", "Ward", "Location", "Village/Landmark",
+                "Owner Name", "Owner Contact", "Latitude", "Longitude", "GPS Accuracy",
+                "Dog Name", "Dog Description", "Vaccination Status",
+                "Certificate No", "Vaccine Batch No", "Recorded By", "Timestamp"
+            ];
+
+            const rows = records.map(r => [
+                r.id, r.subcounty, r.ward, r.location, r.villageLandmark,
+                r.ownerName, r.ownerContact, r.latitude, r.longitude, r.gpsAccuracy,
+                r.dogName, r.dogDescription, r.vaccinationStatus,
+                r.certificateNo, r.vaccineBatchNo, r.recordedBy, r.createdAt
+            ].map(v => '"' + String(v || "").replace(/"/g, '""') + '"').join(","));
+
+            const csv = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "ToCAWI_Kibwezi_East_Rabies_" + new Date().toISOString().slice(0, 10) + ".csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function refreshDashboard() {
+            updateKPIs();
+            renderTable();
+            setTimeout(() => { map.invalidateSize(); }, 300);
+        }
+
+        loadStickyFields();
+        handleStatusChange();
+        loadCloudData();
+    </script>
+</body>
+</html>
