@@ -977,7 +977,7 @@
         }
 
         function sendRecordToCloud(record) {
-            if (GAS_WEB_APP_URL.includes("YOUR_GAS_WEB_APP_URL")) return;
+            if (GAS_WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbyGjqvIxO_jRdH4fM6snzNTB-82bnWxtp3TG9XALtQeTpAuHygYP0Xp3qni8vi60I-I/exec")) return;
             fetch(GAS_WEB_APP_URL, {
                 method: "POST",
                 mode: "no-cors",
@@ -987,7 +987,7 @@
         }
 
         function loadCloudData() {
-            if (GAS_WEB_APP_URL.includes("YOUR_GAS_WEB_APP_URL")) {
+            if (GAS_WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbyGjqvIxO_jRdH4fM6snzNTB-82bnWxtp3TG9XALtQeTpAuHygYP0Xp3qni8vi60I-I/exec")) {
                 refreshDashboard();
                 return;
             }
