@@ -32,12 +32,62 @@
             --shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
         }
 
+        /* Fix Header Overflow & Logo Sizing */
+        .site-header {
+            background-color: var(--surface);
+            height: 90px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .header-container {
+            max-width: 1380px;
+            margin: 0 auto;
+            height: 100%;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .header-logo-img {
+            height: 60px;
+            width: auto;
+            max-width: 60px;
+            object-fit: contain;
+        }
+
+        .logo-text h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--tocawi-blue);
+            line-height: 1.1;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin: 0;
+        }
+
         body {
             background-color: var(--bg);
             color: var(--text);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            margin: 0;
         }
 
         .main-wrapper {
@@ -55,7 +105,7 @@
         .hero-banner {
             background: linear-gradient(135deg, var(--tocawi-blue) 0%, #254090 100%);
             color: #ffffff;
-            padding: 30px;
+            padding: 24px 30px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             display: flex;
@@ -65,8 +115,8 @@
             gap: 15px;
         }
 
-        .hero-banner h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; }
-        .hero-banner p { font-size: 0.9rem; opacity: 0.9; }
+        .hero-banner h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+        .hero-banner p { font-size: 0.85rem; opacity: 0.9; }
 
         .header-controls {
             display: flex;
@@ -384,11 +434,11 @@
 </head>
 <body>
 
-    <!-- EXACT ToCAWI Header Structure (matching style.css) -->
+    <!-- Header -->
     <header class="site-header">
         <div class="header-container">
             <a href="index.html" class="logo-area">
-                <img src="images/logo.png" alt="ToCAWI Logo" class="header-logo-img" onerror="this.src='https://via.placeholder.com/80?text=ToCAWI'">
+                <img src="images/logo.png" alt="ToCAWI Logo" class="header-logo-img" onerror="this.src='https://via.placeholder.com/60?text=ToCAWI'">
                 <div class="logo-text">
                     <h1>ToCAWI</h1>
                     <p>Tails of Care Animal Welfare Initiative</p>
@@ -412,7 +462,10 @@
         </div>
     </header>
 
-    
+    <!-- Global Floating Donate Button -->
+    <a href="choices.html" class="global-floating-donate-btn" aria-label="Donate to ToCAWI">
+        <i class="fa-solid fa-heart"></i> Donate
+    </a>
 
     <!-- Mobile Navigation Overlay -->
     <div class="mobile-nav-overlay" id="mobileNav">
@@ -668,11 +721,11 @@
 
     </div>
 
-    <!-- EXACT ToCAWI Footer Structure (matching style.css) -->
+    <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-branding">
-                <img src="images/logo.png" alt="ToCAWI Badge" class="footer-logo-img" onerror="this.src='https://via.placeholder.com/100?text=ToCAWI'">
+                <img src="images/logo.png" alt="ToCAWI Badge" class="footer-logo-img" onerror="this.src='https://via.placeholder.com/80?text=ToCAWI'">
                 <h2 class="footer-logo-title">ToCAWI</h2>
                 <p class="footer-logo-sub">Tails of Care Animal Welfare Initiative</p>
             </div>
@@ -706,10 +759,8 @@
     <!-- Leaflet & App Script Logic -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // REPLACE WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyGjqvIxO_jRdH4fM6snzNTB-82bnWxtp3TG9XALtQeTpAuHygYP0Xp3qni8vi60I-I/exec";
 
-        // Mobile Menu & Scroll Top interactive hook (matching style.css scripts)
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menuToggle');
             const mobileNav = document.getElementById('mobileNav');
@@ -752,7 +803,6 @@
 
         let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         
-        // Initialize Map
         const map = L.map('map').setView([-2.4167, 37.9667], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
