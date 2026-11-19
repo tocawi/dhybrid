@@ -54,6 +54,8 @@
 
         html {
             scroll-behavior: smooth;
+            width: 100%;
+            overflow-x: hidden;
         }
 
         body {
@@ -64,6 +66,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            width: 100%;
             overflow-x: hidden;
         }
 
@@ -79,11 +82,12 @@
         }
 
         /* ==========================================================================
-           HEADER & SMART RETRACTING NAVIGATION BAR
+           EXACT REFERENCE HEADER & NAVIGATION BAR (PINNED AT TOP ALWAYS)
            ========================================================================== */
         .site-header {
             background-color: var(--clr-bg-white);
-            min-height: var(--header-height);
+            height: var(--header-height);
+            width: 100%;
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -93,7 +97,7 @@
         .header-container {
             max-width: var(--max-content-width);
             margin: 0 auto;
-            height: var(--header-height);
+            height: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -162,102 +166,90 @@
             text-decoration: underline;
         }
 
-        /* Hamburger Button with Smooth Morphing Bars */
         .menu-toggle {
             display: none;
             flex-direction: column;
             justify-content: space-between;
             width: 28px;
-            height: 20px;
+            height: 18px;
             background: transparent;
             border: none;
             cursor: pointer;
             padding: 0;
-            z-index: 1002;
+            z-index: 1001;
         }
 
         .hamburger-bar {
             width: 100%;
-            height: 2.5px;
-            border-radius: 2px;
+            height: 2px;
             background-color: var(--clr-blue-primary);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
-            transform-origin: center;
+            transition: all 0.3s ease;
         }
 
-        .menu-toggle.is-active .hamburger-bar:nth-child(1) {
-            transform: translateY(8.75px) rotate(45deg);
-        }
-
-        .menu-toggle.is-active .hamburger-bar:nth-child(2) {
-            opacity: 0;
-        }
-
-        .menu-toggle.is-active .hamburger-bar:nth-child(3) {
-            transform: translateY(-8.75px) rotate(-45deg);
-        }
-
-        /* Smart Retracting Inline Mobile Drawer (Non-Blocking) */
-        .mobile-nav-drawer {
-            max-height: 0;
-            overflow: hidden;
+        /* Original Full-Screen Mobile Navigation Overlay */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
             background-color: var(--clr-bg-white);
-            border-top: 1px solid transparent;
-            transition: max-height 0.36s cubic-bezier(0.4, 0, 0.2, 1),
-                        border-color 0.3s ease,
-                        box-shadow 0.3s ease;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(100%);
+            visibility: hidden;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
         }
 
-        .mobile-nav-drawer.is-active {
-            max-height: 440px;
-            border-top-color: var(--border-light);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.07);
+        .mobile-nav-overlay.is-active {
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        .close-menu {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .xmark-icon {
+            font-size: 2.2rem;
+            color: var(--clr-blue-primary);
         }
 
         .mobile-nav-links {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px 12px;
-            padding: 16px 24px 20px;
-            max-width: var(--max-content-width);
-            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
         }
 
         .mobile-link {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
             color: var(--clr-blue-primary);
-            padding: 10px 14px;
-            border-radius: 8px;
-            background-color: var(--surface-alt);
-            border: 1px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background-color 0.2s ease, transform 0.15s ease;
-        }
-
-        .mobile-link:hover,
-        .mobile-link:active {
-            background-color: #eef2ff;
-            transform: translateX(2px);
         }
 
         .mobile-link.active {
-            background-color: var(--clr-blue-primary);
-            color: #ffffff;
-            border-color: var(--clr-blue-primary);
-            font-weight: 600;
+            text-decoration: underline;
+            font-weight: 700;
         }
 
         /* ==========================================================================
-           DASHBOARD WORKSPACE & COMPONENTS
+           DASHBOARD WORKSPACE & CONTAINED SCROLLABLE COMPONENTS
            ========================================================================== */
         .main-wrapper {
             max-width: 1380px;
             margin: 24px auto;
             padding: 0 20px;
             width: 100%;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -275,6 +267,8 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
+            width: 100%;
+            min-width: 0;
         }
 
         .hero-banner h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
@@ -328,8 +322,10 @@
 
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 14px;
+            width: 100%;
+            min-width: 0;
         }
 
         .kpi-card {
@@ -338,6 +334,7 @@
             border-radius: var(--radius);
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow);
+            min-width: 0;
         }
 
         .kpi-title {
@@ -372,6 +369,8 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
+            width: 100%;
+            min-width: 0;
         }
 
         .ward-strip-label {
@@ -394,14 +393,20 @@
 
         .ward-pill strong { color: var(--tocawi-green); margin-left: 4px; }
 
+        /* Workspace Grid: min-width: 0 prevents children from blowing out viewport width */
         .workspace {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             gap: 20px;
+            width: 100%;
+            min-width: 0;
         }
 
         @media (min-width: 1080px) {
-            .workspace { grid-template-columns: 480px 1fr; align-items: start; }
+            .workspace {
+                grid-template-columns: 460px minmax(0, 1fr);
+                align-items: start;
+            }
         }
 
         .panel {
@@ -409,7 +414,10 @@
             border-radius: var(--radius);
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow);
-            padding: 24px;
+            padding: 22px;
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
         }
 
         .panel-header {
@@ -417,11 +425,37 @@
             align-items: center;
             justify-content: space-between;
             padding-bottom: 12px;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
             border-bottom: 1px solid var(--border-light);
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .panel-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+
+        .scroll-hint {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--clr-text-muted);
+            background: var(--surface-alt);
+            border: 1px solid var(--border-light);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Scrollable container for Record Homestead & Dog section */
+        .form-scroll {
+            width: 100%;
+            max-height: 620px;
+            overflow-y: auto;
+            overflow-x: auto;
+            padding-right: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .form-scroll-inner {
+            min-width: 310px;
+        }
 
         .edit-banner {
             display: none;
@@ -462,13 +496,15 @@
 
         .grid-2 {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             gap: 12px;
             margin-bottom: 12px;
         }
-        @media (min-width: 520px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 520px) {
+            .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
 
-        .field { margin-bottom: 12px; }
+        .field { margin-bottom: 12px; min-width: 0; }
         .grid-2 .field { margin-bottom: 0; }
 
         label {
@@ -479,6 +515,7 @@
             font-weight: 600;
             color: var(--text-secondary);
             margin-bottom: 4px;
+            gap: 6px;
         }
 
         .req { color: var(--red); margin-left: 2px; }
@@ -491,10 +528,12 @@
             font-weight: 700;
             cursor: pointer;
             text-decoration: underline;
+            white-space: nowrap;
         }
 
         input[type="text"], input[type="tel"], select, textarea {
             width: 100%;
+            min-width: 0;
             padding: 9px 12px;
             font-size: 0.85rem;
             font-family: inherit;
@@ -516,9 +555,10 @@
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 12px;
+            min-width: 0;
         }
 
-        .gps-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .gps-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px; flex-wrap: wrap; }
         .gps-top span { font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); }
 
         .btn-gps {
@@ -530,11 +570,16 @@
             padding: 6px 11px;
             border-radius: 6px;
             cursor: pointer;
+            white-space: nowrap;
         }
         .btn-gps:hover { background-color: var(--tocawi-green-hover); }
 
-        .gps-coords { display: grid; grid-template-columns: 1fr 1fr 85px; gap: 8px; }
-        .gps-coords input { font-size: 0.78rem; padding: 7px 9px; font-family: monospace; }
+        .gps-coords {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 72px;
+            gap: 8px;
+        }
+        .gps-coords input { font-size: 0.78rem; padding: 7px 8px; font-family: monospace; min-width: 0; }
         .gps-msg { font-size: 0.71rem; color: var(--clr-text-muted); margin-top: 6px; }
 
         .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
@@ -557,18 +602,64 @@
         .btn-add-another { background-color: var(--dark); color: #ffffff; font-size: 0.78rem; }
         .btn-add-another:hover { background-color: #0f172a; }
 
-        .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-        .filter-bar input { flex: 1; min-width: 180px; padding: 8px 11px; font-size: 0.8rem; }
-        .filter-bar select { width: auto; padding: 8px 10px; font-size: 0.8rem; }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+            width: 100%;
+            min-width: 0;
+        }
+        .filter-bar input { flex: 1 1 180px; min-width: 0; padding: 8px 11px; font-size: 0.8rem; }
+        .filter-bar select { flex: 1 1 130px; min-width: 0; padding: 8px 10px; font-size: 0.8rem; }
 
-        .table-scroll { overflow-x: auto; border: 1px solid var(--border-light); border-radius: 8px; max-height: 450px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.79rem; text-align: left; }
-        thead { background-color: var(--surface-alt); border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 10; }
-        th { padding: 11px; font-size: 0.69rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); white-space: nowrap; }
-        td { padding: 11px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+        /* Horizontal & Vertical Scrollable Campaign Records Table Window */
+        .table-scroll {
+            width: 100%;
+            max-width: 100%;
+            max-height: 480px;
+            overflow-x: auto;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            min-width: 740px;
+            border-collapse: collapse;
+            font-size: 0.79rem;
+            text-align: left;
+        }
+
+        thead {
+            background-color: var(--surface-alt);
+            border-bottom: 1px solid var(--border-light);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 11px;
+            font-size: 0.69rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            background-color: var(--surface-alt);
+        }
+
+        td {
+            padding: 11px;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+        }
+
         tbody tr:hover { background-color: #f8fafc; }
 
-        .t-bold { font-weight: 700; color: var(--text); }
+        .t-bold { font-weight: 700; color: var(--text); white-space: nowrap; }
         .t-sub { font-size: 0.73rem; color: var(--clr-text-muted); }
         .t-desc { max-width: 210px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .t-mono { font-family: monospace; font-size: 0.71rem; color: var(--text-secondary); white-space: nowrap; }
@@ -584,7 +675,16 @@
         .btn-edit { color: var(--tocawi-blue); }
         .btn-del { color: var(--red); }
 
-        .map-panel { margin-top: 20px; background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border-light); box-shadow: var(--shadow); }
+        .map-panel {
+            margin-top: 4px;
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+            width: 100%;
+            min-width: 0;
+        }
         #map { height: 350px; width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; position: relative; z-index: 1; }
 
         /* ==========================================================================
@@ -595,6 +695,7 @@
             padding: 60px 0 0 0;
             text-align: center;
             margin-top: auto;
+            width: 100%;
         }
 
         .footer-container {
@@ -653,6 +754,7 @@
             align-items: center;
             gap: 14px;
             margin-bottom: 30px;
+            flex-wrap: wrap;
         }
 
         .social-icon {
@@ -775,6 +877,19 @@
                 margin-right: 0;
             }
 
+            .main-wrapper {
+                padding: 0 12px;
+                margin: 16px auto;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .hero-banner {
+                padding: 18px 20px;
+            }
+
             .floating-top-btn {
                 bottom: 20px;
                 right: 20px;
@@ -783,24 +898,29 @@
             }
         }
 
-        @media (max-width: 420px) {
-            .mobile-nav-links {
-                grid-template-columns: 1fr;
-                padding: 12px 16px 16px;
-            }
-        }
-
         @media (max-width: 375px) {
             .header-container {
                 padding: 0 12px;
+            }
+
+            .header-logo-img {
+                height: 64px;
+            }
+
+            .logo-text h1 {
+                font-size: 38px;
+            }
+
+            .logo-text p {
+                font-size: 8.5px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header / Navigation Bar with Smart Retracting Drawer -->
-    <header class="site-header" id="siteHeader">
+    <!-- Header / Navigation Bar (Logo & Hamburger Always Pinned at Top) -->
+    <header class="site-header">
         <div class="header-container">
             <a href="index.html" class="logo-area">
                 <img src="images/logo.png" alt="ToCAWI Logo" class="header-logo-img">
@@ -822,28 +942,31 @@
                 <a href="#" class="nav-link">Emergency Info</a>
             </nav>
 
-            <!-- Hamburger Button (Morphs cleanly between bars & X) -->
-            <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Toggle Navigation Menu">
+            <!-- Hamburger Button for Mobile Menu -->
+            <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Open Navigation Menu">
                 <span class="hamburger-bar"></span>
                 <span class="hamburger-bar"></span>
                 <span class="hamburger-bar"></span>
             </button>
         </div>
-
-        <!-- Non-Blocking Inline Mobile Navigation Drawer -->
-        <div class="mobile-nav-drawer" id="mobileNav" aria-hidden="true">
-            <nav class="mobile-nav-links">
-                <a href="index.html" class="mobile-link active">Home</a>
-                <a href="#" class="mobile-link">About Us</a>
-                <a href="#" class="mobile-link">Our Programs</a>
-                <a href="#" class="mobile-link">Get Involved</a>
-                <a href="#" class="mobile-link">Blog</a>
-                <a href="#" class="mobile-link">Our Partners & Team</a>
-                <a href="#" class="mobile-link">Contact Us</a>
-                <a href="#" class="mobile-link">Emergency Info</a>
-            </nav>
-        </div>
     </header>
+
+    <!-- Original Full-Screen Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay" id="mobileNav" aria-hidden="true">
+        <button class="close-menu" id="menuClose" aria-label="Close Navigation Menu">
+            <i class="fa-solid xmark-icon fa-xmark"></i>
+        </button>
+        <nav class="mobile-nav-links">
+            <a href="index.html" class="mobile-link active">Home</a>
+            <a href="#" class="mobile-link">About Us</a>
+            <a href="#" class="mobile-link">Our Programs</a>
+            <a href="#" class="mobile-link">Get Involved</a>
+            <a href="#" class="mobile-link">Blog</a>
+            <a href="#" class="mobile-link">Our Partners & Team</a>
+            <a href="#" class="mobile-link">Contact Us</a>
+            <a href="#" class="mobile-link">Emergency Info</a>
+        </nav>
+    </div>
 
     <!-- Main Dashboard Container -->
     <main class="main-wrapper">
@@ -902,140 +1025,146 @@
         </section>
 
         <div class="workspace">
-            <!-- Form Panel -->
+            <!-- Form Panel (Horizontally & Vertically Scrollable Inside Window) -->
             <section class="panel">
                 <div class="panel-header">
                     <h2 id="formHeading">Record Homestead &amp; Dog</h2>
+                    <span class="scroll-hint">&#8597; Scrollable Form</span>
                 </div>
 
-                <div id="editBanner" class="edit-banner">
-                    <span>Editing existing record</span>
-                    <button type="button" class="btn-cancel-edit" onclick="cancelEdit()">Cancel Edit</button>
+                <div class="form-scroll">
+                    <div class="form-scroll-inner">
+                        <div id="editBanner" class="edit-banner">
+                            <span>Editing existing record</span>
+                            <button type="button" class="btn-cancel-edit" onclick="cancelEdit()">Cancel Edit</button>
+                        </div>
+
+                        <form id="campaignForm">
+                            <input type="hidden" id="editingId" value="" />
+
+                            <div class="section-tag">1. Administrative Location</div>
+
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="subcounty">Sub-County</label>
+                                    <input type="text" id="subcounty" value="Kibwezi East" readonly />
+                                </div>
+                                <div class="field">
+                                    <label for="ward">Ward <span class="req">*</span></label>
+                                    <select id="ward" required onchange="handleWardChange()">
+                                        <option value="">-- Select Ward --</option>
+                                        <option value="Masongaleni">Masongaleni</option>
+                                        <option value="Mtito Andei">Mtito Andei</option>
+                                        <option value="Thange">Thange</option>
+                                        <option value="Ivingoni/Nzambani">Ivingoni/Nzambani</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="location">Location <span class="req">*</span></label>
+                                    <select id="location" required onchange="handleLocationChange()">
+                                        <option value="">-- Select Ward First --</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="villageLandmark">Village / Nearest Landmark</label>
+                                    <input type="text" id="villageLandmark" placeholder="e.g. Near Kambu Primary" />
+                                </div>
+                            </div>
+
+                            <div id="customLocationWrap" class="field hidden">
+                                <label for="customLocation">Specify Custom Location <span class="req">*</span></label>
+                                <input type="text" id="customLocation" placeholder="Enter location name" />
+                            </div>
+
+                            <div class="section-tag">2. Owner &amp; Homestead Geo Coordinates</div>
+
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="ownerName">Name of Owner <span class="req">*</span></label>
+                                    <input type="text" id="ownerName" required placeholder="e.g. Mutua Musyoka" />
+                                </div>
+                                <div class="field">
+                                    <label for="ownerContact">Owner Contact <span class="req">*</span></label>
+                                    <input type="tel" id="ownerContact" required pattern="^(\+254|0)\d{9}$"
+                                        title="Enter a valid Kenyan mobile number (e.g. 0712345678 or +254712345678)"
+                                        placeholder="0712345678" />
+                                </div>
+                            </div>
+
+                            <div class="gps-panel">
+                                <div class="gps-top">
+                                    <span>Homestead GPS Coordinates <span class="req">*</span></span>
+                                    <button type="button" class="btn-gps" onclick="captureGPS()">&#128205; Capture GPS</button>
+                                </div>
+                                <div class="gps-coords">
+                                    <input type="text" id="latitude" required placeholder="Lat (-2.4167)" />
+                                    <input type="text" id="longitude" required placeholder="Lng (37.9667)" />
+                                    <input type="text" id="gpsAccuracy" readonly placeholder="Acc (m)" title="GPS accuracy in meters" />
+                                </div>
+                                <div id="gpsMsg" class="gps-msg">Tap Capture GPS while standing at the homestead.</div>
+                            </div>
+
+                            <div class="section-tag">3. Dog &amp; Vaccination Details</div>
+
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="dogName">
+                                        <span>Name of Dog <span class="req">*</span></span>
+                                        <button type="button" class="mini-link" onclick="setUnnamedDog()">Set "Unnamed"</button>
+                                    </label>
+                                    <input type="text" id="dogName" required placeholder="e.g. Simba" />
+                                </div>
+                                <div class="field">
+                                    <label for="vaccinationStatus">Vaccination Status <span class="req">*</span></label>
+                                    <select id="vaccinationStatus" required onchange="handleStatusChange()">
+                                        <option value="Vaccinated">Vaccinated</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Booster Due">Booster Due</option>
+                                        <option value="Deferred">Deferred (Sick/Pregnant)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label for="dogDescription">Dog Description (Sex, Age, Breed, Coat Colour/Markings) <span class="req">*</span></label>
+                                <textarea id="dogDescription" rows="2" required placeholder="e.g. Adult Male, Local breed, Brown with white chest patch"></textarea>
+                            </div>
+
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label for="certificateNo">Certificate No. <span id="certReqMark" class="req">*</span></label>
+                                    <input type="text" id="certificateNo" required placeholder="e.g. MKN-KE-00142" />
+                                </div>
+                                <div class="field">
+                                    <label for="vaccineBatchNo">Vaccine Batch No. (Sticky)</label>
+                                    <input type="text" id="vaccineBatchNo" placeholder="e.g. RAB-2026-09B" />
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label for="recordedBy">Recorded By (Enumerator / Officer)</label>
+                                <input type="text" id="recordedBy" placeholder="e.g. Dr. Kamau / AHA Wambua" />
+                            </div>
+
+                            <div class="btn-group">
+                                <button type="submit" id="btnSubmit" class="btn btn-save">Save &amp; Sync Record</button>
+                                <button type="button" id="btnAddAnother" class="btn btn-add-another" onclick="saveAndAddAnotherDog()">
+                                    + Save &amp; Add Dog (Same Owner)
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-
-                <form id="campaignForm">
-                    <input type="hidden" id="editingId" value="" />
-
-                    <div class="section-tag">1. Administrative Location</div>
-
-                    <div class="grid-2">
-                        <div class="field">
-                            <label for="subcounty">Sub-County</label>
-                            <input type="text" id="subcounty" value="Kibwezi East" readonly />
-                        </div>
-                        <div class="field">
-                            <label for="ward">Ward <span class="req">*</span></label>
-                            <select id="ward" required onchange="handleWardChange()">
-                                <option value="">-- Select Ward --</option>
-                                <option value="Masongaleni">Masongaleni</option>
-                                <option value="Mtito Andei">Mtito Andei</option>
-                                <option value="Thange">Thange</option>
-                                <option value="Ivingoni/Nzambani">Ivingoni/Nzambani</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid-2">
-                        <div class="field">
-                            <label for="location">Location <span class="req">*</span></label>
-                            <select id="location" required onchange="handleLocationChange()">
-                                <option value="">-- Select Ward First --</option>
-                            </select>
-                        </div>
-                        <div class="field">
-                            <label for="villageLandmark">Village / Nearest Landmark</label>
-                            <input type="text" id="villageLandmark" placeholder="e.g. Near Kambu Primary" />
-                        </div>
-                    </div>
-
-                    <div id="customLocationWrap" class="field hidden">
-                        <label for="customLocation">Specify Custom Location <span class="req">*</span></label>
-                        <input type="text" id="customLocation" placeholder="Enter location name" />
-                    </div>
-
-                    <div class="section-tag">2. Owner &amp; Homestead Geo Coordinates</div>
-
-                    <div class="grid-2">
-                        <div class="field">
-                            <label for="ownerName">Name of Owner <span class="req">*</span></label>
-                            <input type="text" id="ownerName" required placeholder="e.g. Mutua Musyoka" />
-                        </div>
-                        <div class="field">
-                            <label for="ownerContact">Owner Contact <span class="req">*</span></label>
-                            <input type="tel" id="ownerContact" required pattern="^(\+254|0)\d{9}$"
-                                title="Enter a valid Kenyan mobile number (e.g. 0712345678 or +254712345678)"
-                                placeholder="0712345678" />
-                        </div>
-                    </div>
-
-                    <div class="gps-panel">
-                        <div class="gps-top">
-                            <span>Homestead GPS Coordinates <span class="req">*</span></span>
-                            <button type="button" class="btn-gps" onclick="captureGPS()">&#128205; Capture GPS</button>
-                        </div>
-                        <div class="gps-coords">
-                            <input type="text" id="latitude" required placeholder="Lat (-2.4167)" />
-                            <input type="text" id="longitude" required placeholder="Lng (37.9667)" />
-                            <input type="text" id="gpsAccuracy" readonly placeholder="Acc (m)" title="GPS accuracy in meters" />
-                        </div>
-                        <div id="gpsMsg" class="gps-msg">Tap Capture GPS while standing at the homestead.</div>
-                    </div>
-
-                    <div class="section-tag">3. Dog &amp; Vaccination Details</div>
-
-                    <div class="grid-2">
-                        <div class="field">
-                            <label for="dogName">
-                                <span>Name of Dog <span class="req">*</span></span>
-                                <button type="button" class="mini-link" onclick="setUnnamedDog()">Set "Unnamed"</button>
-                            </label>
-                            <input type="text" id="dogName" required placeholder="e.g. Simba" />
-                        </div>
-                        <div class="field">
-                            <label for="vaccinationStatus">Vaccination Status <span class="req">*</span></label>
-                            <select id="vaccinationStatus" required onchange="handleStatusChange()">
-                                <option value="Vaccinated">Vaccinated</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Booster Due">Booster Due</option>
-                                <option value="Deferred">Deferred (Sick/Pregnant)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <label for="dogDescription">Dog Description (Sex, Age, Breed, Coat Colour/Markings) <span class="req">*</span></label>
-                        <textarea id="dogDescription" rows="2" required placeholder="e.g. Adult Male, Local breed, Brown with white chest patch"></textarea>
-                    </div>
-
-                    <div class="grid-2">
-                        <div class="field">
-                            <label for="certificateNo">Certificate No. <span id="certReqMark" class="req">*</span></label>
-                            <input type="text" id="certificateNo" required placeholder="e.g. MKN-KE-00142" />
-                        </div>
-                        <div class="field">
-                            <label for="vaccineBatchNo">Vaccine Batch No. (Sticky)</label>
-                            <input type="text" id="vaccineBatchNo" placeholder="e.g. RAB-2026-09B" />
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <label for="recordedBy">Recorded By (Enumerator / Officer)</label>
-                        <input type="text" id="recordedBy" placeholder="e.g. Dr. Kamau / AHA Wambua" />
-                    </div>
-
-                    <div class="btn-group">
-                        <button type="submit" id="btnSubmit" class="btn btn-save">Save &amp; Sync Record</button>
-                        <button type="button" id="btnAddAnother" class="btn btn-add-another" onclick="saveAndAddAnotherDog()">
-                            + Save &amp; Add Dog (Same Owner)
-                        </button>
-                    </div>
-                </form>
             </section>
 
-            <!-- Records & Search Panel -->
+            <!-- Records & Search Panel (Horizontally & Vertically Scrollable Table Inside Window) -->
             <section class="panel">
                 <div class="panel-header">
                     <h2>Campaign Records (<span id="shownCount">0</span> of <span id="totalCountBadge">0</span>)</h2>
+                    <span class="scroll-hint">&#8596;&#8597; Scroll Table</span>
                 </div>
 
                 <div class="filter-bar">
@@ -1132,68 +1261,46 @@
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyGjqvIxO_jRdH4fM6snzNTB-82bnWxtp3TG9XALtQeTpAuHygYP0Xp3qni8vi60I-I/exec";
 
         document.addEventListener('DOMContentLoaded', function() {
-            const siteHeader = document.getElementById('siteHeader');
             const menuToggle = document.getElementById('menuToggle');
             const mobileNav = document.getElementById('mobileNav');
+            const menuClose = document.getElementById('menuClose');
             const mobileLinks = mobileNav.querySelectorAll('.mobile-link');
             const scrollTopBtn = document.getElementById('floatingBackToTop');
-            let lastScrollY = window.scrollY;
 
-            function openMenu() {
+            function openMobileMenu() {
                 mobileNav.classList.add('is-active');
-                menuToggle.classList.add('is-active');
                 menuToggle.setAttribute('aria-expanded', 'true');
                 mobileNav.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
             }
 
-            function closeMenu() {
+            function closeMobileMenu() {
                 if (!mobileNav.classList.contains('is-active')) return;
                 mobileNav.classList.remove('is-active');
-                menuToggle.classList.remove('is-active');
                 menuToggle.setAttribute('aria-expanded', 'false');
                 mobileNav.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
             }
 
-            // Toggle drawer on hamburger tap
-            menuToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (mobileNav.classList.contains('is-active')) {
-                    closeMenu();
-                } else {
-                    openMenu();
-                }
-            });
+            menuToggle.addEventListener('click', openMobileMenu);
+            menuClose.addEventListener('click', closeMobileMenu);
 
-            // Auto-retract when a menu link is tapped
+            // Auto-retract menu when any link is clicked
             mobileLinks.forEach(link => {
-                link.addEventListener('click', closeMenu);
+                link.addEventListener('click', closeMobileMenu);
             });
 
-            // Auto-retract when tapping anywhere outside the header/drawer
-            document.addEventListener('click', function(e) {
-                if (!siteHeader.contains(e.target)) {
-                    closeMenu();
-                }
+            // Auto-retract menu on Escape key or resizing to desktop
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeMobileMenu();
             });
 
-            // Auto-retract if viewport resizes past mobile breakpoint
             window.addEventListener('resize', function() {
-                if (window.innerWidth > 768) {
-                    closeMenu();
-                }
+                if (window.innerWidth > 768) closeMobileMenu();
             });
 
-            // Smart scroll listener: retract menu when user scrolls into content & toggle back-to-top
             window.addEventListener('scroll', function() {
-                const currentScrollY = window.scrollY;
-
-                // Retract drawer if user scrolls more than 25px while it's open
-                if (mobileNav.classList.contains('is-active') && Math.abs(currentScrollY - lastScrollY) > 25) {
-                    closeMenu();
-                }
-                lastScrollY = currentScrollY;
-
-                if (currentScrollY > 400) {
+                if (window.scrollY > 400) {
                     scrollTopBtn.classList.add('visible');
                 } else {
                     scrollTopBtn.classList.remove('visible');
@@ -1460,6 +1567,7 @@
             document.getElementById("btnSubmit").textContent = "Update Record";
             document.getElementById("btnAddAnother").classList.add("hidden");
             document.getElementById("editBanner").classList.add("active");
+            document.querySelector(".form-scroll").scrollTo({ top: 0, behavior: "smooth" });
             window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
