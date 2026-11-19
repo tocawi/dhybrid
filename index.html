@@ -82,7 +82,7 @@
         }
 
         /* ==========================================================================
-           EXACT REFERENCE HEADER & NAVIGATION BAR (PINNED AT TOP ALWAYS)
+           EXACT REFERENCE HEADER & NAVIGATION BAR
            ========================================================================== */
         .site-header {
             background-color: var(--clr-bg-white);
@@ -90,7 +90,7 @@
             width: 100%;
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 100;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
         }
 
@@ -176,7 +176,7 @@
             border: none;
             cursor: pointer;
             padding: 0;
-            z-index: 1001;
+            z-index: 101;
         }
 
         .hamburger-bar {
@@ -186,27 +186,25 @@
             transition: all 0.3s ease;
         }
 
-        /* Original Full-Screen Mobile Navigation Overlay */
+        /* Full-Screen Mobile Navigation Overlay */
         .mobile-nav-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 100vw;
             height: 100vh;
             background-color: var(--clr-bg-white);
-            z-index: 1100;
+            z-index: 1000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             transform: translateX(100%);
-            visibility: hidden;
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .mobile-nav-overlay.is-active {
             transform: translateX(0);
-            visibility: visible;
         }
 
         .close-menu {
@@ -231,14 +229,44 @@
         }
 
         .mobile-link {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             color: var(--clr-blue-primary);
         }
 
         .mobile-link.active {
             text-decoration: underline;
-            font-weight: 700;
+        }
+
+        /* Global Floating Donate Button */
+        .global-floating-donate-btn {
+            position: fixed;
+            top: 130px;
+            right: 24px;
+            background-color: #3a5cbf;
+            color: #ffffff !important;
+            padding: 12px 24px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none !important;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(58, 92, 191, 0.35);
+            z-index: 990;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .global-floating-donate-btn:hover {
+            background-color: #2b4699;
+            transform: scale(1.05);
+            box-shadow: 0 6px 22px rgba(58, 92, 191, 0.5);
+        }
+
+        .global-floating-donate-btn i {
+            font-size: 0.95rem;
         }
 
         /* ==========================================================================
@@ -393,7 +421,6 @@
 
         .ward-pill strong { color: var(--tocawi-green); margin-left: 4px; }
 
-        /* Workspace Grid: min-width: 0 prevents children from blowing out viewport width */
         .workspace {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
@@ -404,7 +431,7 @@
 
         @media (min-width: 1080px) {
             .workspace {
-                grid-template-columns: 460px minmax(0, 1fr);
+                grid-template-columns: 480px minmax(0, 1fr);
                 align-items: start;
             }
         }
@@ -414,7 +441,7 @@
             border-radius: var(--radius);
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow);
-            padding: 22px;
+            padding: 24px;
             width: 100%;
             min-width: 0;
             overflow: hidden;
@@ -425,7 +452,7 @@
             align-items: center;
             justify-content: space-between;
             padding-bottom: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             border-bottom: 1px solid var(--border-light);
             gap: 10px;
             flex-wrap: wrap;
@@ -443,7 +470,6 @@
             border-radius: 6px;
         }
 
-        /* Scrollable container for Record Homestead & Dog section */
         .form-scroll {
             width: 100%;
             max-height: 620px;
@@ -613,26 +639,23 @@
         .filter-bar input { flex: 1 1 180px; min-width: 0; padding: 8px 11px; font-size: 0.8rem; }
         .filter-bar select { flex: 1 1 130px; min-width: 0; padding: 8px 10px; font-size: 0.8rem; }
 
-        /* Horizontal & Vertical Scrollable Campaign Records Table Window */
         .table-scroll {
             width: 100%;
             max-width: 100%;
-            max-height: 480px;
+            max-height: 450px;
             overflow-x: auto;
             overflow-y: auto;
             border: 1px solid var(--border-light);
             border-radius: 8px;
             -webkit-overflow-scrolling: touch;
         }
-
         table {
             width: 100%;
-            min-width: 740px;
+            min-width: 720px;
             border-collapse: collapse;
             font-size: 0.79rem;
             text-align: left;
         }
-
         thead {
             background-color: var(--surface-alt);
             border-bottom: 1px solid var(--border-light);
@@ -640,7 +663,6 @@
             top: 0;
             z-index: 10;
         }
-
         th {
             padding: 11px;
             font-size: 0.69rem;
@@ -650,13 +672,11 @@
             white-space: nowrap;
             background-color: var(--surface-alt);
         }
-
         td {
             padding: 11px;
             border-bottom: 1px solid var(--border-light);
             vertical-align: top;
         }
-
         tbody tr:hover { background-color: #f8fafc; }
 
         .t-bold { font-weight: 700; color: var(--text); white-space: nowrap; }
@@ -676,7 +696,7 @@
         .btn-del { color: var(--red); }
 
         .map-panel {
-            margin-top: 4px;
+            margin-top: 20px;
             background: var(--surface);
             padding: 20px;
             border-radius: var(--radius);
@@ -685,7 +705,7 @@
             width: 100%;
             min-width: 0;
         }
-        #map { height: 350px; width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; position: relative; z-index: 1; }
+        #map { height: 350px; width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; }
 
         /* ==========================================================================
            EXACT REFERENCE FOOTER & BACK TO TOP BUTTON
@@ -695,7 +715,6 @@
             padding: 60px 0 0 0;
             text-align: center;
             margin-top: auto;
-            width: 100%;
         }
 
         .footer-container {
@@ -754,7 +773,6 @@
             align-items: center;
             gap: 14px;
             margin-bottom: 30px;
-            flex-wrap: wrap;
         }
 
         .social-icon {
@@ -830,6 +848,13 @@
         /* ==========================================================================
            RESPONSIVE MEDIA QUERIES
            ========================================================================== */
+        @media (max-width: 1024px) {
+            .global-floating-donate-btn {
+                top: 115px;
+                right: 16px;
+            }
+        }
+
         @media (max-width: 768px) {
             .header-container {
                 position: relative;
@@ -877,17 +902,11 @@
                 margin-right: 0;
             }
 
-            .main-wrapper {
-                padding: 0 12px;
-                margin: 16px auto;
-            }
-
-            .panel {
-                padding: 16px;
-            }
-
-            .hero-banner {
-                padding: 18px 20px;
+            .global-floating-donate-btn {
+                top: 105px;
+                right: 16px;
+                padding: 10px 18px;
+                font-size: 0.9rem;
             }
 
             .floating-top-btn {
@@ -898,28 +917,23 @@
             }
         }
 
+        @media (max-width: 480px) {
+            .global-floating-donate-btn {
+                top: 100px;
+                right: 12px;
+            }
+        }
+
         @media (max-width: 375px) {
             .header-container {
                 padding: 0 12px;
-            }
-
-            .header-logo-img {
-                height: 64px;
-            }
-
-            .logo-text h1 {
-                font-size: 38px;
-            }
-
-            .logo-text p {
-                font-size: 8.5px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header / Navigation Bar (Logo & Hamburger Always Pinned at Top) -->
+    <!-- Header / Navigation Bar -->
     <header class="site-header">
         <div class="header-container">
             <a href="index.html" class="logo-area">
@@ -943,7 +957,7 @@
             </nav>
 
             <!-- Hamburger Button for Mobile Menu -->
-            <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Open Navigation Menu">
+            <button class="menu-toggle" id="menuToggle" aria-label="Open Navigation Menu">
                 <span class="hamburger-bar"></span>
                 <span class="hamburger-bar"></span>
                 <span class="hamburger-bar"></span>
@@ -951,8 +965,9 @@
         </div>
     </header>
 
-    <!-- Original Full-Screen Mobile Navigation Overlay -->
-    <div class="mobile-nav-overlay" id="mobileNav" aria-hidden="true">
+    
+    <!-- Full-Screen Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay" id="mobileNav">
         <button class="close-menu" id="menuClose" aria-label="Close Navigation Menu">
             <i class="fa-solid xmark-icon fa-xmark"></i>
         </button>
@@ -1025,7 +1040,7 @@
         </section>
 
         <div class="workspace">
-            <!-- Form Panel (Horizontally & Vertically Scrollable Inside Window) -->
+            <!-- Form Panel -->
             <section class="panel">
                 <div class="panel-header">
                     <h2 id="formHeading">Record Homestead &amp; Dog</h2>
@@ -1160,7 +1175,7 @@
                 </div>
             </section>
 
-            <!-- Records & Search Panel (Horizontally & Vertically Scrollable Table Inside Window) -->
+            <!-- Records & Search Panel -->
             <section class="panel">
                 <div class="panel-header">
                     <h2>Campaign Records (<span id="shownCount">0</span> of <span id="totalCountBadge">0</span>)</h2>
@@ -1267,30 +1282,22 @@
             const mobileLinks = mobileNav.querySelectorAll('.mobile-link');
             const scrollTopBtn = document.getElementById('floatingBackToTop');
 
-            function openMobileMenu() {
-                mobileNav.classList.add('is-active');
-                menuToggle.setAttribute('aria-expanded', 'true');
-                mobileNav.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
-            }
-
             function closeMobileMenu() {
-                if (!mobileNav.classList.contains('is-active')) return;
                 mobileNav.classList.remove('is-active');
-                menuToggle.setAttribute('aria-expanded', 'false');
-                mobileNav.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
             }
 
-            menuToggle.addEventListener('click', openMobileMenu);
+            menuToggle.addEventListener('click', function() {
+                mobileNav.classList.add('is-active');
+                document.body.style.overflow = 'hidden';
+            });
+
             menuClose.addEventListener('click', closeMobileMenu);
 
-            // Auto-retract menu when any link is clicked
             mobileLinks.forEach(link => {
                 link.addEventListener('click', closeMobileMenu);
             });
 
-            // Auto-retract menu on Escape key or resizing to desktop
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') closeMobileMenu();
             });
@@ -1305,7 +1312,7 @@
                 } else {
                     scrollTopBtn.classList.remove('visible');
                 }
-            }, { passive: true });
+            });
 
             scrollTopBtn.addEventListener('click', function() {
                 window.scrollTo({
@@ -1567,7 +1574,6 @@
             document.getElementById("btnSubmit").textContent = "Update Record";
             document.getElementById("btnAddAnother").classList.add("hidden");
             document.getElementById("editBanner").classList.add("active");
-            document.querySelector(".form-scroll").scrollTo({ top: 0, behavior: "smooth" });
             window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
@@ -1719,3 +1725,4 @@
     </script>
 </body>
 </html>
+```[cite: 1, 2]
