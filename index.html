@@ -68,6 +68,7 @@
             min-height: 100vh;
             width: 100%;
             overflow-x: hidden;
+            padding-top: var(--header-height);
         }
 
         img {
@@ -82,15 +83,17 @@
         }
 
         /* ==========================================================================
-           EXACT REFERENCE HEADER & NAVIGATION BAR
+           EXACT REFERENCE HEADER & NAVIGATION BAR (FIXED ON ALL DISPLAYS)
            ========================================================================== */
         .site-header {
             background-color: var(--clr-bg-white);
             height: var(--header-height);
             width: 100%;
-            position: sticky;
+            position: fixed;
             top: 0;
-            z-index: 100;
+            left: 0;
+            right: 0;
+            z-index: 995;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
             transition: height 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
         }
@@ -263,37 +266,7 @@
             text-decoration: underline;
         }
 
-        /* Global Floating Donate Button */
-        .global-floating-donate-btn {
-            position: fixed;
-            top: 130px;
-            right: 24px;
-            background-color: #3a5cbf;
-            color: #ffffff !important;
-            padding: 12px 24px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
-            text-decoration: none !important;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(58, 92, 191, 0.35);
-            z-index: 990;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .global-floating-donate-btn:hover {
-            background-color: #2b4699;
-            transform: scale(1.05);
-            box-shadow: 0 6px 22px rgba(58, 92, 191, 0.5);
-        }
-
-        .global-floating-donate-btn i {
-            font-size: 0.95rem;
-        }
-
+        
         /* ==========================================================================
            DASHBOARD WORKSPACE & CONTAINED SCROLLABLE COMPONENTS
            ========================================================================== */
@@ -881,6 +854,14 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding-top: var(--header-mobile-height);
+            }
+
+            .site-header {
+                height: var(--header-mobile-height);
+            }
+
             .header-container {
                 position: relative;
             }
