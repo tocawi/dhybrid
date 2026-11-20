@@ -266,7 +266,6 @@
             text-decoration: underline;
         }
 
-        
         /* ==========================================================================
            DASHBOARD WORKSPACE & CONTAINED SCROLLABLE COMPONENTS
            ========================================================================== */
@@ -298,7 +297,7 @@
         }
 
         .hero-banner h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-        .hero-banner p { font-size: 0.85rem; opacity: 0.9; }
+        .hero-banner p { font-size: 0.85rem; opacity: 0.92; }
 
         .header-controls {
             display: flex;
@@ -345,6 +344,47 @@
             cursor: pointer;
         }
         .btn-header-outline:hover { background-color: rgba(255, 255, 255, 0.15); }
+
+        .county-switcher-bar {
+            background: var(--surface);
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .county-switcher-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            flex: 1 1 320px;
+        }
+
+        .county-switcher-left label {
+            margin: 0;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .county-switcher-left select {
+            max-width: 300px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .county-location-meta {
+            font-size: 0.78rem;
+            color: var(--clr-text-muted);
+        }
 
         .kpi-grid {
             display: grid;
@@ -406,7 +446,7 @@
             color: var(--text-secondary);
         }
 
-        .ward-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+        .ward-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 
         .ward-pill {
             background: var(--surface-alt);
@@ -470,7 +510,7 @@
 
         .form-scroll {
             width: 100%;
-            max-height: 620px;
+            max-height: 640px;
             overflow-y: auto;
             overflow-x: auto;
             padding-right: 4px;
@@ -649,7 +689,7 @@
         }
         table {
             width: 100%;
-            min-width: 720px;
+            min-width: 760px;
             border-collapse: collapse;
             font-size: 0.79rem;
             text-align: left;
@@ -846,13 +886,6 @@
         /* ==========================================================================
            RESPONSIVE MEDIA QUERIES
            ========================================================================== */
-        @media (max-width: 1024px) {
-            .global-floating-donate-btn {
-                top: 115px;
-                right: 16px;
-            }
-        }
-
         @media (max-width: 768px) {
             body {
                 padding-top: var(--header-mobile-height);
@@ -921,13 +954,6 @@
                 margin-top: 3px;
             }
 
-            .global-floating-donate-btn {
-                top: 105px;
-                right: 16px;
-                padding: 10px 18px;
-                font-size: 0.9rem;
-            }
-
             .floating-top-btn {
                 bottom: 20px;
                 right: 20px;
@@ -964,11 +990,6 @@
 
             .site-header.is-scrolled .logo-text p {
                 font-size: 8px;
-            }
-
-            .global-floating-donate-btn {
-                top: 100px;
-                right: 12px;
             }
         }
 
@@ -1057,22 +1078,35 @@
         <!-- Hero Banner -->
         <div class="hero-banner">
             <div>
-                <h2>Kibwezi East Rabies Vaccination Campaign</h2>
-                <p>Makueni County Directorate of Veterinary Services &bull; Field Data Collection System</p>
+                <h2 id="campaignTitle">Rabies Vaccination Campaign — All Kenya Counties</h2>
+                <p id="campaignSubtitle">Directorate of Veterinary Services &bull; Field Data Collection System</p>
             </div>
             <div class="header-controls">
                 <span class="status-pill"><span class="dot"></span> <span id="syncStatus">Connected to Sheets DB</span></span>
-                <button type="button" class="btn-header-outline" onclick="loadCloudData()">&#8635; Refresh Data</button>
+                <button type="button" class="btn-header-outline" onclick="triggerCountyRefresh()">&#8635; Refresh Data</button>
                 <button type="button" class="btn-header" onclick="exportCSV()">&#11015; Export CSV</button>
             </div>
         </div>
+
+        <!-- County Selection & Automatic Refresh Bar -->
+        <section class="county-switcher-bar" aria-label="County Data Selector">
+            <div class="county-switcher-left">
+                <label for="activeCountySelect">Active County Data View:</label>
+                <select id="activeCountySelect" onchange="onCountySelectionChange()">
+                    <option value="">Loading 47 counties…</option>
+                </select>
+            </div>
+            <div id="locationHierarchyStatus" class="county-location-meta">
+                Loading Kenya administrative locations (47 counties, 290 sub-counties/constituencies, 1,450 wards)…
+            </div>
+        </section>
 
         <!-- KPIs -->
         <section class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-title">Total Dogs Recorded</div>
                 <div id="kpiTotal" class="kpi-num">0</div>
-                <div class="kpi-sub">Across Kibwezi East</div>
+                <div id="kpiScopeSub" class="kpi-sub">Selected county view</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-title">Vaccinated</div>
@@ -1096,14 +1130,11 @@
             </div>
         </section>
 
-        <!-- Ward Strip -->
+        <!-- Ward / Sub-County Breakdown Strip -->
         <section class="ward-strip">
-            <span class="ward-strip-label">Ward Breakdown:</span>
-            <div class="ward-pills">
-                <span class="ward-pill">Masongaleni: <strong id="countMasongaleni">0</strong></span>
-                <span class="ward-pill">Mtito Andei: <strong id="countMtito">0</strong></span>
-                <span class="ward-pill">Thange: <strong id="countThange">0</strong></span>
-                <span class="ward-pill">Ivingoni/Nzambani: <strong id="countIvingoni">0</strong></span>
+            <span id="breakdownStripLabel" class="ward-strip-label">Ward Breakdown:</span>
+            <div id="wardBreakdownPills" class="ward-pills">
+                <span class="ward-pill">Select a county to view wards</span>
             </div>
         </section>
 
@@ -1125,41 +1156,46 @@
                         <form id="campaignForm">
                             <input type="hidden" id="editingId" value="" />
 
-                            <div class="section-tag">1. Administrative Location</div>
+                            <div class="section-tag">1. Administrative Location (Kenya Divisions)</div>
 
                             <div class="grid-2">
                                 <div class="field">
-                                    <label for="subcounty">Sub-County</label>
-                                    <input type="text" id="subcounty" value="Kibwezi East" readonly />
+                                    <label for="formCounty">County <span class="req">*</span></label>
+                                    <select id="formCounty" required onchange="handleFormCountyChange()">
+                                        <option value="">Loading counties…</option>
+                                    </select>
                                 </div>
                                 <div class="field">
-                                    <label for="ward">Ward <span class="req">*</span></label>
-                                    <select id="ward" required onchange="handleWardChange()">
-                                        <option value="">-- Select Ward --</option>
-                                        <option value="Masongaleni">Masongaleni</option>
-                                        <option value="Mtito Andei">Mtito Andei</option>
-                                        <option value="Thange">Thange</option>
-                                        <option value="Ivingoni/Nzambani">Ivingoni/Nzambani</option>
+                                    <label for="subcounty">Sub-County / Constituency <span class="req">*</span></label>
+                                    <select id="subcounty" required onchange="handleSubcountyChange()">
+                                        <option value="">Select a county first</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="grid-2">
                                 <div class="field">
-                                    <label for="location">Location <span class="req">*</span></label>
-                                    <select id="location" required onchange="handleLocationChange()">
-                                        <option value="">-- Select Ward First --</option>
+                                    <label for="ward">Ward <span class="req">*</span></label>
+                                    <select id="ward" required onchange="handleWardChange()">
+                                        <option value="">Select a sub-county first</option>
                                     </select>
                                 </div>
                                 <div class="field">
-                                    <label for="villageLandmark">Village / Nearest Landmark</label>
-                                    <input type="text" id="villageLandmark" placeholder="e.g. Near Kambu Primary" />
+                                    <label for="location">Location / Sub-Location <span class="req">*</span></label>
+                                    <select id="location" required onchange="handleLocationChange()">
+                                        <option value="">Select or enter location</option>
+                                    </select>
                                 </div>
+                            </div>
+
+                            <div class="field">
+                                <label for="villageLandmark">Village / Nearest Landmark</label>
+                                <input type="text" id="villageLandmark" placeholder="e.g. Near Kambu Primary" />
                             </div>
 
                             <div id="customLocationWrap" class="field hidden">
                                 <label for="customLocation">Specify Custom Location <span class="req">*</span></label>
-                                <input type="text" id="customLocation" placeholder="Enter location name" />
+                                <input type="text" id="customLocation" placeholder="Enter location or sub-location name" />
                             </div>
 
                             <div class="section-tag">2. Owner &amp; Homestead Geo Coordinates</div>
@@ -1183,8 +1219,8 @@
                                     <button type="button" class="btn-gps" onclick="captureGPS()">&#128205; Capture GPS</button>
                                 </div>
                                 <div class="gps-coords">
-                                    <input type="text" id="latitude" required placeholder="Lat (-2.4167)" />
-                                    <input type="text" id="longitude" required placeholder="Lng (37.9667)" />
+                                    <input type="text" id="latitude" required placeholder="Lat (-1.2921)" />
+                                    <input type="text" id="longitude" required placeholder="Lng (36.8219)" />
                                     <input type="text" id="gpsAccuracy" readonly placeholder="Acc (m)" title="GPS accuracy in meters" />
                                 </div>
                                 <div id="gpsMsg" class="gps-msg">Tap Capture GPS while standing at the homestead.</div>
@@ -1252,12 +1288,11 @@
 
                 <div class="filter-bar">
                     <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search owner, contact, dog, village, cert no..." />
+                    <select id="filterSubcounty" onchange="handleFilterSubcountyChange()">
+                        <option value="">All Sub-Counties</option>
+                    </select>
                     <select id="filterWard" onchange="renderTable()">
                         <option value="">All Wards</option>
-                        <option value="Masongaleni">Masongaleni</option>
-                        <option value="Mtito Andei">Mtito Andei</option>
-                        <option value="Thange">Thange</option>
-                        <option value="Ivingoni/Nzambani">Ivingoni/Nzambani</option>
                     </select>
                     <select id="filterStatus" onchange="renderTable()">
                         <option value="">All Statuses</option>
@@ -1272,7 +1307,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Ward / Location</th>
+                                <th>County / Ward / Location</th>
                                 <th>Owner &amp; Contact</th>
                                 <th>Dog &amp; Description</th>
                                 <th>GPS Coordinates</th>
@@ -1289,7 +1324,7 @@
         <!-- Geographic Distribution Map -->
         <section class="map-panel">
             <div class="panel-header">
-                <h2>Campaign Geographic Distribution</h2>
+                <h2 id="mapHeading">Campaign Geographic Distribution</h2>
             </div>
             <div id="map"></div>
         </section>
@@ -1341,7 +1376,22 @@
     <!-- Leaflet & App Script Logic -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyGjqvIxO_jRdH4fM6snzNTB-82bnWxtp3TG9XALtQeTpAuHygYP0Xp3qni8vi60I-I/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxWA7gkFJqPCGwif7k241UruSBjXg8XFmkAUkRhfTVQPuB4Wttnh-cyLANH41V06MvB/exec";
+        const KENYA_HIERARCHY_URL = "https://raw.githubusercontent.com/open-admin-data/kenya-administrative-divisions/master/data/hierarchy.json";
+
+        const STORAGE_KEY = "tocawi_kenya_rabies_records_v2";
+        const STICKY_KEY = "tocawi_kenya_sticky_meta_v2";
+        const SELECTED_COUNTY_KEY = "tocawi_selected_county_v2";
+
+        let kenyaCounties = [];
+        let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        let activeCountyName = localStorage.getItem(SELECTED_COUNTY_KEY) || "Makueni";
+
+        const map = L.map('map').setView([-1.2921, 36.8219], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        let markersLayer = L.layerGroup().addTo(map);
 
         document.addEventListener('DOMContentLoaded', function() {
             const siteHeader = document.getElementById('siteHeader');
@@ -1370,10 +1420,7 @@
             });
 
             menuClose.addEventListener('click', closeMobileMenu);
-
-            mobileLinks.forEach(link => {
-                link.addEventListener('click', closeMobileMenu);
-            });
+            mobileLinks.forEach(link => link.addEventListener('click', closeMobileMenu));
 
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') closeMobileMenu();
@@ -1393,69 +1440,224 @@
             }, { passive: true });
 
             scrollTopBtn.addEventListener('click', function() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
 
             updateHeaderOnScroll();
         });
 
-        const KIBWEZI_EAST_WARDS = {
-            "Masongaleni": ["Masimbani", "Ulilinzi", "Kyanguli", "Masongaleni", "Mukaange"],
-            "Mtito Andei": ["Kiteng'ei", "Kambu", "Kathekani", "Mtito Andei"],
-            "Thange": ["Utithi", "Mikuyuni", "Thange", "Kinyambu"],
-            "Ivingoni/Nzambani": ["Mang'elete", "Muthingiini", "Ivingoni", "Nzambani"]
-        };
-
-        const STORAGE_KEY = "tocawi_kibwezi_rabies_records";
-        const STICKY_KEY = "tocawi_kibwezi_sticky_meta";
-
-        let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-
-        const map = L.map('map').setView([-2.4167, 37.9667], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-        let markersLayer = L.layerGroup().addTo(map);
-
-        function loadStickyFields() {
-            const sticky = JSON.parse(localStorage.getItem(STICKY_KEY)) || {};
-            if (sticky.vaccineBatchNo) document.getElementById("vaccineBatchNo").value = sticky.vaccineBatchNo;
-            if (sticky.recordedBy) document.getElementById("recordedBy").value = sticky.recordedBy;
+        function populateSelectOptions(selectEl, items, placeholder, useNameAsValue = true) {
+            selectEl.replaceChildren(new Option(placeholder, ""));
+            items.forEach(item => {
+                const label = typeof item === "string" ? item : (item.name && item.name.en ? item.name.en : String(item));
+                const val = typeof item === "string" ? item : (useNameAsValue ? label : (item.id || label));
+                selectEl.add(new Option(label, val));
+            });
+            selectEl.disabled = items.length === 0;
         }
 
-        function saveStickyFields() {
-            localStorage.setItem(STICKY_KEY, JSON.stringify({
-                vaccineBatchNo: document.getElementById("vaccineBatchNo").value.trim(),
-                recordedBy: document.getElementById("recordedBy").value.trim()
-            }));
+        function findCountyObjByName(name) {
+            if (!name) return null;
+            return kenyaCounties.find(c => (c.name?.en || "").toLowerCase() === name.toLowerCase()) || null;
+        }
+
+        function findSubcountyObj(countyObj, subcountyName) {
+            if (!countyObj || !subcountyName || !Array.isArray(countyObj.subcounty)) return null;
+            return countyObj.subcounty.find(sc => (sc.name?.en || "").toLowerCase() === subcountyName.toLowerCase()) || null;
+        }
+
+        async function loadKenyaLocations() {
+            const statusEl = document.getElementById("locationHierarchyStatus");
+            const activeCountySelect = document.getElementById("activeCountySelect");
+            const formCountySelect = document.getElementById("formCounty");
+
+            try {
+                const res = await fetch(KENYA_HIERARCHY_URL);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const payload = await res.json();
+                if (!Array.isArray(payload.data) || payload.data.length === 0) {
+                    throw new Error("Invalid Kenya administrative divisions payload.");
+                }
+
+                kenyaCounties = payload.data.sort((a, b) => (a.name?.en || "").localeCompare(b.name?.en || ""));
+
+                activeCountySelect.replaceChildren(new Option("All Counties (Nationwide)", "__ALL__"));
+                kenyaCounties.forEach(c => {
+                    const cName = c.name.en;
+                    activeCountySelect.add(new Option(cName, cName));
+                });
+
+                formCountySelect.replaceChildren(new Option("-- Select County --", ""));
+                kenyaCounties.forEach(c => {
+                    const cName = c.name.en;
+                    formCountySelect.add(new Option(cName, cName));
+                });
+
+                const initialCounty = findCountyObjByName(activeCountyName) ? activeCountyName : (kenyaCounties[0]?.name?.en || "__ALL__");
+                activeCountyName = initialCounty;
+                activeCountySelect.value = initialCounty;
+                localStorage.setItem(SELECTED_COUNTY_KEY, activeCountyName);
+
+                if (activeCountyName && activeCountyName !== "__ALL__") {
+                    formCountySelect.value = activeCountyName;
+                    handleFormCountyChange();
+                }
+
+                populateTableFilterSubcounties();
+                statusEl.textContent = `Loaded ${kenyaCounties.length} counties, 290 sub-counties/constituencies & 1,450 wards.`;
+            } catch (err) {
+                console.error("Error loading Kenya hierarchy:", err);
+                activeCountySelect.replaceChildren(
+                    new Option("All Counties", "__ALL__"),
+                    new Option("Makueni", "Makueni"),
+                    new Option("Kiambu", "Kiambu"),
+                    new Option("Nairobi", "Nairobi")
+                );
+                activeCountySelect.value = activeCountyName || "Makueni";
+                formCountySelect.replaceChildren(
+                    new Option("-- Select County --", ""),
+                    new Option("Makueni", "Makueni"),
+                    new Option("Kiambu", "Kiambu"),
+                    new Option("Nairobi", "Nairobi")
+                );
+                statusEl.textContent = "Offline hierarchy fallback active (" + err.message + ").";
+            }
+
+            await loadCloudData(activeCountyName);
+        }
+
+        function onCountySelectionChange() {
+            const sel = document.getElementById("activeCountySelect");
+            activeCountyName = sel.value || "__ALL__";
+            localStorage.setItem(SELECTED_COUNTY_KEY, activeCountyName);
+
+            document.getElementById("filterSubcounty").value = "";
+            document.getElementById("filterWard").value = "";
+            populateTableFilterSubcounties();
+
+            if (activeCountyName !== "__ALL__" && !document.getElementById("editingId").value) {
+                const formCounty = document.getElementById("formCounty");
+                if (Array.from(formCounty.options).some(o => o.value === activeCountyName)) {
+                    formCounty.value = activeCountyName;
+                    handleFormCountyChange();
+                }
+            }
+
+            triggerCountyRefresh();
+        }
+
+        function triggerCountyRefresh() {
+            loadCloudData(activeCountyName);
+        }
+
+        function populateTableFilterSubcounties() {
+            const subFilter = document.getElementById("filterSubcounty");
+            const wardFilter = document.getElementById("filterWard");
+
+            if (activeCountyName === "__ALL__") {
+                const uniqueSubs = Array.from(new Set(records.map(r => r.subcounty).filter(Boolean))).sort();
+                populateSelectOptions(subFilter, uniqueSubs, "All Sub-Counties");
+                const uniqueWards = Array.from(new Set(records.map(r => r.ward).filter(Boolean))).sort();
+                populateSelectOptions(wardFilter, uniqueWards, "All Wards");
+                return;
+            }
+
+            const countyObj = findCountyObjByName(activeCountyName);
+            const subNames = countyObj && Array.isArray(countyObj.subcounty)
+                ? countyObj.subcounty.map(s => s.name.en)
+                : Array.from(new Set(records.filter(r => matchesCounty(r, activeCountyName)).map(r => r.subcounty).filter(Boolean)));
+
+            populateSelectOptions(subFilter, subNames, "All Sub-Counties");
+            handleFilterSubcountyChange(false);
+        }
+
+        function handleFilterSubcountyChange(shouldRender = true) {
+            const subVal = document.getElementById("filterSubcounty").value;
+            const wardFilter = document.getElementById("filterWard");
+
+            let wards = [];
+            if (activeCountyName !== "__ALL__") {
+                const countyObj = findCountyObjByName(activeCountyName);
+                if (countyObj && Array.isArray(countyObj.subcounty)) {
+                    if (subVal) {
+                        const subObj = findSubcountyObj(countyObj, subVal);
+                        wards = subObj && Array.isArray(subObj.ward) ? subObj.ward.map(w => w.name.en) : [];
+                    } else {
+                        wards = countyObj.subcounty.flatMap(s => (s.ward || []).map(w => w.name.en));
+                    }
+                }
+            }
+
+            if (wards.length === 0) {
+                const scoped = getCountyRecords(activeCountyName).filter(r => !subVal || r.subcounty === subVal);
+                wards = Array.from(new Set(scoped.map(r => r.ward).filter(Boolean))).sort();
+            }
+
+            populateSelectOptions(wardFilter, Array.from(new Set(wards)), "All Wards");
+            if (shouldRender) renderTable();
+        }
+
+        function handleFormCountyChange(preselectSubcounty = "", preselectWard = "", preselectLocation = "") {
+            const countyVal = document.getElementById("formCounty").value;
+            const subSelect = document.getElementById("subcounty");
+            const wardSelect = document.getElementById("ward");
+
+            const countyObj = findCountyObjByName(countyVal);
+            const subList = countyObj && Array.isArray(countyObj.subcounty) ? countyObj.subcounty.map(s => s.name.en) : [];
+
+            populateSelectOptions(subSelect, subList, countyVal ? "-- Select Sub-County --" : "Select a county first");
+            populateSelectOptions(wardSelect, [], "Select a sub-county first");
+
+            if (preselectSubcounty) {
+                if (!Array.from(subSelect.options).some(o => o.value === preselectSubcounty)) {
+                    subSelect.add(new Option(preselectSubcounty, preselectSubcounty));
+                }
+                subSelect.value = preselectSubcounty;
+                handleSubcountyChange(preselectWard, preselectLocation);
+            } else {
+                handleSubcountyChange("", "");
+            }
+        }
+
+        function handleSubcountyChange(preselectWard = "", preselectLocation = "") {
+            const countyVal = document.getElementById("formCounty").value;
+            const subVal = document.getElementById("subcounty").value;
+            const wardSelect = document.getElementById("ward");
+
+            const countyObj = findCountyObjByName(countyVal);
+            const subObj = findSubcountyObj(countyObj, subVal);
+            const wardList = subObj && Array.isArray(subObj.ward) ? subObj.ward.map(w => w.name.en) : [];
+
+            populateSelectOptions(wardSelect, wardList, subVal ? "-- Select Ward --" : "Select a sub-county first");
+
+            if (preselectWard) {
+                if (!Array.from(wardSelect.options).some(o => o.value === preselectWard)) {
+                    wardSelect.add(new Option(preselectWard, preselectWard));
+                }
+                wardSelect.value = preselectWard;
+            }
+            handleWardChange(preselectLocation);
         }
 
         function handleWardChange(preselectLocation = "") {
-            const ward = document.getElementById("ward").value;
+            const wardVal = document.getElementById("ward").value;
             const locSelect = document.getElementById("location");
-            locSelect.innerHTML = '<option value="">-- Select Location --</option>';
 
-            if (ward && KIBWEZI_EAST_WARDS[ward]) {
-                KIBWEZI_EAST_WARDS[ward].forEach(loc => {
-                    const opt = document.createElement("option");
-                    opt.value = loc;
-                    opt.textContent = loc;
-                    locSelect.appendChild(opt);
-                });
-                const otherOpt = document.createElement("option");
-                otherOpt.value = "OTHER";
-                otherOpt.textContent = "Other / Custom Location...";
-                locSelect.appendChild(otherOpt);
+            locSelect.replaceChildren(new Option("-- Select Location Option --", ""));
+            if (wardVal) {
+                locSelect.add(new Option(wardVal + " Central / Town", wardVal + " Central"));
+                locSelect.add(new Option(wardVal + " Rural / Market Area", wardVal + " Rural"));
+                locSelect.add(new Option("Other / Custom Location...", "OTHER"));
+                locSelect.disabled = false;
+            } else {
+                locSelect.disabled = true;
             }
 
             if (preselectLocation) {
                 const exists = Array.from(locSelect.options).some(o => o.value === preselectLocation);
                 if (exists) {
                     locSelect.value = preselectLocation;
-                } else if (ward) {
+                } else if (wardVal) {
                     locSelect.value = "OTHER";
                     document.getElementById("customLocation").value = preselectLocation;
                 }
@@ -1519,6 +1721,19 @@
             );
         }
 
+        function loadStickyFields() {
+            const sticky = JSON.parse(localStorage.getItem(STICKY_KEY)) || {};
+            if (sticky.vaccineBatchNo) document.getElementById("vaccineBatchNo").value = sticky.vaccineBatchNo;
+            if (sticky.recordedBy) document.getElementById("recordedBy").value = sticky.recordedBy;
+        }
+
+        function saveStickyFields() {
+            localStorage.setItem(STICKY_KEY, JSON.stringify({
+                vaccineBatchNo: document.getElementById("vaccineBatchNo").value.trim(),
+                recordedBy: document.getElementById("recordedBy").value.trim()
+            }));
+        }
+
         function buildRecordFromForm() {
             const locVal = document.getElementById("location").value;
             const finalLocation = locVal === "OTHER" ? document.getElementById("customLocation").value.trim() : locVal;
@@ -1526,7 +1741,8 @@
 
             return {
                 id: existingId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
-                subcounty: "Kibwezi East",
+                county: document.getElementById("formCounty").value,
+                subcounty: document.getElementById("subcounty").value,
                 ward: document.getElementById("ward").value,
                 location: finalLocation,
                 villageLandmark: document.getElementById("villageLandmark").value.trim(),
@@ -1548,6 +1764,7 @@
         function saveToStorage() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
             saveStickyFields();
+            populateTableFilterSubcounties();
             refreshDashboard();
         }
 
@@ -1562,6 +1779,12 @@
                 cancelEdit(false);
             } else {
                 records.unshift(record);
+            }
+
+            if (record.county && activeCountyName !== "__ALL__" && activeCountyName !== record.county) {
+                activeCountyName = record.county;
+                localStorage.setItem(SELECTED_COUNTY_KEY, activeCountyName);
+                document.getElementById("activeCountySelect").value = activeCountyName;
             }
 
             saveToStorage();
@@ -1584,7 +1807,7 @@
             document.getElementById("vaccinationStatus").value = "Vaccinated";
             handleStatusChange();
             document.getElementById("dogName").focus();
-            document.getElementById("gpsMsg").textContent = "Saved! Owner & GPS kept for next dog.";
+            document.getElementById("gpsMsg").textContent = "Saved! County, Owner & GPS kept for next dog.";
         }
 
         function sendRecordToCloud(record) {
@@ -1597,20 +1820,32 @@
             }).catch(err => console.error("Cloud sync error:", err));
         }
 
-        function loadCloudData() {
+        function loadCloudData(countyScope = activeCountyName) {
             if (!GAS_WEB_APP_URL) {
                 refreshDashboard();
                 return;
             }
-            document.getElementById("syncStatus").textContent = "Syncing with Sheets...";
-            fetch(GAS_WEB_APP_URL)
+            const scopeLabel = countyScope && countyScope !== "__ALL__" ? countyScope : "All Counties";
+            document.getElementById("syncStatus").textContent = `Syncing ${scopeLabel}...`;
+
+            const url = (countyScope && countyScope !== "__ALL__")
+                ? `${GAS_WEB_APP_URL}?county=${encodeURIComponent(countyScope)}`
+                : GAS_WEB_APP_URL;
+
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.records && data.records.length > 0) {
-                        records = data.records;
+                    if (data && Array.isArray(data.records)) {
+                        if (!countyScope || countyScope === "__ALL__") {
+                            records = data.records;
+                        } else {
+                            const otherCounties = records.filter(r => !matchesCounty(r, countyScope));
+                            records = [...data.records, ...otherCounties];
+                        }
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                        populateTableFilterSubcounties();
                     }
-                    document.getElementById("syncStatus").textContent = "Connected to Sheets DB";
+                    document.getElementById("syncStatus").textContent = `Connected (${scopeLabel})`;
                     refreshDashboard();
                 })
                 .catch(err => {
@@ -1621,10 +1856,15 @@
         }
 
         function resetFullForm() {
+            const prevCounty = document.getElementById("formCounty").value || (activeCountyName !== "__ALL__" ? activeCountyName : "");
             document.getElementById("campaignForm").reset();
             document.getElementById("editingId").value = "";
-            document.getElementById("subcounty").value = "Kibwezi East";
-            handleWardChange();
+            if (prevCounty) {
+                document.getElementById("formCounty").value = prevCounty;
+                handleFormCountyChange();
+            } else {
+                handleFormCountyChange();
+            }
             handleStatusChange();
             loadStickyFields();
         }
@@ -1634,8 +1874,13 @@
             if (!rec) return;
 
             document.getElementById("editingId").value = rec.id;
-            document.getElementById("ward").value = rec.ward;
-            handleWardChange(rec.location);
+            const formCounty = document.getElementById("formCounty");
+            if (rec.county && !Array.from(formCounty.options).some(o => o.value === rec.county)) {
+                formCounty.add(new Option(rec.county, rec.county));
+            }
+            formCounty.value = rec.county || "";
+            handleFormCountyChange(rec.subcounty || "", rec.ward || "", rec.location || "");
+
             document.getElementById("villageLandmark").value = rec.villageLandmark || "";
             document.getElementById("ownerName").value = rec.ownerName;
             document.getElementById("ownerContact").value = rec.ownerContact;
@@ -1672,11 +1917,30 @@
             saveToStorage();
         }
 
-        function updateKPIs() {
-            const total = records.length;
-            const vaccinated = records.filter(r => r.vaccinationStatus === "Vaccinated").length;
-            const pending = records.filter(r => r.vaccinationStatus === "Pending" || r.vaccinationStatus === "Booster Due").length;
-            const deferred = records.filter(r => r.vaccinationStatus === "Deferred").length;
+        function matchesCounty(record, countyName) {
+            if (!countyName || countyName === "__ALL__") return true;
+            return (record.county || "").trim().toLowerCase() === countyName.trim().toLowerCase();
+        }
+
+        function getCountyRecords(countyName = activeCountyName) {
+            return records.filter(r => matchesCounty(r, countyName));
+        }
+
+        function updateBannerAndKPIs() {
+            const scoped = getCountyRecords(activeCountyName);
+            const isAllCounties = !activeCountyName || activeCountyName === "__ALL__";
+            const countyLabel = isAllCounties ? "All Kenya Counties" : `${activeCountyName} County`;
+
+            document.getElementById("campaignTitle").textContent = `Rabies Vaccination Campaign — ${countyLabel}`;
+            document.getElementById("campaignSubtitle").textContent =
+                `${countyLabel} Directorate of Veterinary Services • Field Data Collection System`;
+            document.getElementById("kpiScopeSub").textContent = `Across ${countyLabel}`;
+            document.getElementById("mapHeading").textContent = `Campaign Geographic Distribution (${countyLabel})`;
+
+            const total = scoped.length;
+            const vaccinated = scoped.filter(r => r.vaccinationStatus === "Vaccinated").length;
+            const pending = scoped.filter(r => r.vaccinationStatus === "Pending" || r.vaccinationStatus === "Booster Due").length;
+            const deferred = scoped.filter(r => r.vaccinationStatus === "Deferred").length;
             const coverage = total > 0 ? Math.round((vaccinated / total) * 100) : 0;
 
             document.getElementById("kpiTotal").textContent = total;
@@ -1686,10 +1950,43 @@
             document.getElementById("kpiCoverage").textContent = coverage + "%";
             document.getElementById("totalCountBadge").textContent = total;
 
-            document.getElementById("countMasongaleni").textContent = records.filter(r => r.ward === "Masongaleni").length;
-            document.getElementById("countMtito").textContent = records.filter(r => r.ward === "Mtito Andei").length;
-            document.getElementById("countThange").textContent = records.filter(r => r.ward === "Thange").length;
-            document.getElementById("countIvingoni").textContent = records.filter(r => r.ward === "Ivingoni/Nzambani").length;
+            const pillsContainer = document.getElementById("wardBreakdownPills");
+            const stripLabel = document.getElementById("breakdownStripLabel");
+            pillsContainer.innerHTML = "";
+
+            if (isAllCounties) {
+                stripLabel.textContent = "Top Counties Breakdown:";
+                const countyCounts = {};
+                scoped.forEach(r => {
+                    const c = r.county || "Unspecified County";
+                    countyCounts[c] = (countyCounts[c] || 0) + 1;
+                });
+                const entries = Object.entries(countyCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+                if (entries.length === 0) {
+                    pillsContainer.innerHTML = '<span class="ward-pill">No records yet</span>';
+                } else {
+                    entries.forEach(([name, count]) => {
+                        pillsContainer.innerHTML += `<span class="ward-pill">${name}: <strong>${count}</strong></span>`;
+                    });
+                }
+            } else {
+                stripLabel.textContent = `${activeCountyName} Ward Breakdown:`;
+                const countyObj = findCountyObjByName(activeCountyName);
+                const hierarchyWards = countyObj && Array.isArray(countyObj.subcounty)
+                    ? countyObj.subcounty.flatMap(sc => (sc.ward || []).map(w => w.name.en))
+                    : [];
+                const recordWards = scoped.map(r => r.ward).filter(Boolean);
+                const displayWards = Array.from(new Set([...hierarchyWards, ...recordWards])).slice(0, 12);
+
+                if (displayWards.length === 0) {
+                    pillsContainer.innerHTML = '<span class="ward-pill">No wards available</span>';
+                } else {
+                    displayWards.forEach(wName => {
+                        const cnt = scoped.filter(r => r.ward === wName).length;
+                        pillsContainer.innerHTML += `<span class="ward-pill">${wName}: <strong>${cnt}</strong></span>`;
+                    });
+                }
+            }
         }
 
         function getStatusPill(status) {
@@ -1703,25 +2000,28 @@
         }
 
         function renderTable() {
+            const countyScoped = getCountyRecords(activeCountyName);
             const q = document.getElementById("searchInput").value.toLowerCase().trim();
+            const fSubcounty = document.getElementById("filterSubcounty").value;
             const fWard = document.getElementById("filterWard").value;
             const fStatus = document.getElementById("filterStatus").value;
 
-            const filtered = records.filter(r => {
+            const filtered = countyScoped.filter(r => {
                 const matchQ = !q || [
-                    r.ownerName, r.ownerContact, r.dogName, r.location,
-                    r.villageLandmark, r.certificateNo, r.dogDescription
+                    r.county, r.subcounty, r.ownerName, r.ownerContact, r.dogName,
+                    r.ward, r.location, r.villageLandmark, r.certificateNo, r.dogDescription
                 ].some(val => (val || "").toLowerCase().includes(q));
+                const matchSub = !fSubcounty || r.subcounty === fSubcounty;
                 const matchWard = !fWard || r.ward === fWard;
                 const matchStatus = !fStatus || r.vaccinationStatus === fStatus;
-                return matchQ && matchWard && matchStatus;
+                return matchQ && matchSub && matchWard && matchStatus;
             });
 
             document.getElementById("shownCount").textContent = filtered.length;
             const tbody = document.getElementById("recordsBody");
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--clr-text-muted);">No records match your current filter.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--clr-text-muted);">No records match the selected county and filters.</td></tr>';
                 markersLayer.clearLayers();
                 return;
             }
@@ -1730,7 +2030,10 @@
             const mapBounds = [];
 
             tbody.innerHTML = filtered.map(r => {
-                const landmarkText = r.villageLandmark ? " &bull; " + r.villageLandmark : "";
+                const countyPrefix = r.county ? r.county + " • " : "";
+                const wardText = r.ward || "Unspecified Ward";
+                const locText = r.location ? " / " + r.location : "";
+                const landmarkText = r.villageLandmark ? " • " + r.villageLandmark : "";
                 const accText = r.gpsAccuracy ? '<div class="t-sub">&plusmn;' + r.gpsAccuracy + '</div>' : "";
                 const certText = r.certificateNo ? '<div class="t-sub" style="margin-top:3px;">Cert: ' + r.certificateNo + '</div>' : "";
 
@@ -1744,11 +2047,13 @@
                         fillColor: r.vaccinationStatus === 'Vaccinated' ? '#457a00' : '#dc640d',
                         fillOpacity: 0.8,
                         weight: 1
-                    }).bindPopup(`<b>${r.dogName}</b> (${r.ownerName})<br>Status: ${r.vaccinationStatus}`).addTo(markersLayer);
+                    }).bindPopup(
+                        `<b>${r.dogName}</b> (${r.ownerName})<br>${r.county || ""} • ${wardText}<br>Status: ${r.vaccinationStatus}`
+                    ).addTo(markersLayer);
                 }
 
                 return '<tr>' +
-                    '<td><div class="t-bold">' + r.ward + '</div><div class="t-sub">' + r.location + landmarkText + '</div></td>' +
+                    '<td><div class="t-bold">' + countyPrefix + wardText + '</div><div class="t-sub">' + (r.subcounty || "") + locText + landmarkText + '</div></td>' +
                     '<td><div class="t-bold">' + r.ownerName + '</div><div class="t-sub">' + r.ownerContact + '</div></td>' +
                     '<td><div class="t-bold">' + r.dogName + '</div><div class="t-sub t-desc" title="' + r.dogDescription + '">' + r.dogDescription + '</div></td>' +
                     '<td class="t-mono">' + r.latitude + ',<br/>' + r.longitude + accText + '</td>' +
@@ -1766,27 +2071,35 @@
         }
 
         function exportCSV() {
-            if (records.length === 0) { alert("No records available to export."); return; }
+            const scoped = getCountyRecords(activeCountyName);
+            if (scoped.length === 0) {
+                alert("No records available to export for the selected county view.");
+                return;
+            }
             const headers = [
-                "Record ID", "Subcounty", "Ward", "Location", "Village/Landmark",
+                "Record ID", "County", "Subcounty", "Ward", "Location", "Village/Landmark",
                 "Owner Name", "Owner Contact", "Latitude", "Longitude", "GPS Accuracy",
                 "Dog Name", "Dog Description", "Vaccination Status",
                 "Certificate No", "Vaccine Batch No", "Recorded By", "Timestamp"
             ];
 
-            const rows = records.map(r => [
-                r.id, r.subcounty, r.ward, r.location, r.villageLandmark,
+            const rows = scoped.map(r => [
+                r.id, r.county, r.subcounty, r.ward, r.location, r.villageLandmark,
                 r.ownerName, r.ownerContact, r.latitude, r.longitude, r.gpsAccuracy,
                 r.dogName, r.dogDescription, r.vaccinationStatus,
                 r.certificateNo, r.vaccineBatchNo, r.recordedBy, r.createdAt
             ].map(v => '"' + String(v || "").replace(/"/g, '""') + '"').join(","));
+
+            const scopeSlug = (!activeCountyName || activeCountyName === "__ALL__")
+                ? "All_Counties"
+                : activeCountyName.replace(/[^a-zA-Z0-9]+/g, "_");
 
             const csv = "\uFEFF" + [headers.join(","), ...rows].join("\n");
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = "ToCAWI_Kibwezi_East_Rabies_" + new Date().toISOString().slice(0, 10) + ".csv";
+            link.download = `ToCAWI_${scopeSlug}_Rabies_` + new Date().toISOString().slice(0, 10) + ".csv";
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1794,14 +2107,14 @@
         }
 
         function refreshDashboard() {
-            updateKPIs();
+            updateBannerAndKPIs();
             renderTable();
             setTimeout(() => { map.invalidateSize(); }, 300);
         }
 
         loadStickyFields();
         handleStatusChange();
-        loadCloudData();
+        loadKenyaLocations();
     </script>
 </body>
 </html>
