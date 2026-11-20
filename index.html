@@ -426,27 +426,63 @@
 
         .ward-strip {
             background: var(--surface);
-            padding: 14px 18px;
+            padding: 16px 20px;
             border-radius: var(--radius);
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow);
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
             gap: 12px;
             width: 100%;
             min-width: 0;
         }
 
-        .ward-strip-label {
+        .ward-strip-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .ward-strip-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ward-strip-controls label {
+            margin: 0;
             font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .ward-strip-controls select {
+            width: auto;
+            min-width: 240px;
+            padding: 7px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .ward-strip-label {
+            font-size: 0.78rem;
             font-weight: 700;
             text-transform: uppercase;
             color: var(--text-secondary);
         }
 
-        .ward-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ward-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
         .ward-pill {
             background: var(--surface-alt);
@@ -1132,7 +1168,18 @@
 
         <!-- Ward / Sub-County Breakdown Strip -->
         <section class="ward-strip">
-            <span id="breakdownStripLabel" class="ward-strip-label">Ward Breakdown:</span>
+            <div class="ward-strip-top">
+                <span id="breakdownStripLabel" class="ward-strip-label">Ward Breakdown:</span>
+                <div class="ward-strip-controls">
+                    <label for="breakdownSubcountySelect">Sub-County:</label>
+                    <select id="breakdownSubcountySelect"
+                            onchange="onBreakdownSubcountyChange(this.value)"
+                            oninput="onBreakdownSubcountyChange(this.value)"
+                            onkeyup="onBreakdownSubcountyChange(this.value)">
+                        <option value="">All Sub-Counties in County</option>
+                    </select>
+                </div>
+            </div>
             <div id="wardBreakdownPills" class="ward-pills">
                 <span class="ward-pill">Select a county to view wards</span>
             </div>
@@ -1386,6 +1433,7 @@
         let kenyaCounties = [];
         let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         let activeCountyName = localStorage.getItem(SELECTED_COUNTY_KEY) || "Makueni";
+        let activeBreakdownSubcounty = "";
 
         const map = L.map('map').setView([-1.2921, 36.8219], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1503,6 +1551,7 @@
                     handleFormCountyChange();
                 }
 
+                populateBreakdownSubcountyDropdown();
                 populateTableFilterSubcounties();
                 statusEl.textContent = `Loaded ${kenyaCounties.length} counties, 290 sub-counties/constituencies & 1,450 wards.`;
             } catch (err) {
@@ -1520,6 +1569,7 @@
                     new Option("Kiambu", "Kiambu"),
                     new Option("Nairobi", "Nairobi")
                 );
+                populateBreakdownSubcountyDropdown();
                 statusEl.textContent = "Offline hierarchy fallback active (" + err.message + ").";
             }
 
@@ -1529,8 +1579,10 @@
         function onCountySelectionChange() {
             const sel = document.getElementById("activeCountySelect");
             activeCountyName = sel.value || "__ALL__";
+            activeBreakdownSubcounty = "";
             localStorage.setItem(SELECTED_COUNTY_KEY, activeCountyName);
 
+            populateBreakdownSubcountyDropdown();
             document.getElementById("filterSubcounty").value = "";
             document.getElementById("filterWard").value = "";
             populateTableFilterSubcounties();
@@ -1544,6 +1596,40 @@
             }
 
             triggerCountyRefresh();
+        }
+
+        function populateBreakdownSubcountyDropdown() {
+            const breakdownSubSelect = document.getElementById("breakdownSubcountySelect");
+            if (!breakdownSubSelect) return;
+
+            if (!activeCountyName || activeCountyName === "__ALL__") {
+                const uniqueSubs = Array.from(new Set(records.map(r => r.subcounty).filter(Boolean))).sort();
+                breakdownSubSelect.replaceChildren(new Option("All Sub-Counties (Nationwide)", ""));
+                uniqueSubs.forEach(s => breakdownSubSelect.add(new Option(s, s)));
+                breakdownSubSelect.disabled = uniqueSubs.length === 0;
+                breakdownSubSelect.value = activeBreakdownSubcounty || "";
+                return;
+            }
+
+            const countyObj = findCountyObjByName(activeCountyName);
+            const subNames = countyObj && Array.isArray(countyObj.subcounty)
+                ? countyObj.subcounty.map(s => s.name.en)
+                : Array.from(new Set(records.filter(r => matchesCounty(r, activeCountyName)).map(r => r.subcounty).filter(Boolean))).sort();
+
+            breakdownSubSelect.replaceChildren(new Option(`All Sub-Counties in ${activeCountyName}`, ""));
+            subNames.forEach(s => breakdownSubSelect.add(new Option(s, s)));
+            breakdownSubSelect.disabled = subNames.length === 0;
+            if (activeBreakdownSubcounty && subNames.includes(activeBreakdownSubcounty)) {
+                breakdownSubSelect.value = activeBreakdownSubcounty;
+            } else {
+                activeBreakdownSubcounty = "";
+                breakdownSubSelect.value = "";
+            }
+        }
+
+        function onBreakdownSubcountyChange(selectedValue) {
+            activeBreakdownSubcounty = selectedValue || "";
+            renderWardBreakdownStrip();
         }
 
         function triggerCountyRefresh() {
@@ -1764,6 +1850,7 @@
         function saveToStorage() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
             saveStickyFields();
+            populateBreakdownSubcountyDropdown();
             populateTableFilterSubcounties();
             refreshDashboard();
         }
@@ -1783,6 +1870,7 @@
 
             if (record.county && activeCountyName !== "__ALL__" && activeCountyName !== record.county) {
                 activeCountyName = record.county;
+                activeBreakdownSubcounty = "";
                 localStorage.setItem(SELECTED_COUNTY_KEY, activeCountyName);
                 document.getElementById("activeCountySelect").value = activeCountyName;
             }
@@ -1843,6 +1931,7 @@
                             records = [...data.records, ...otherCounties];
                         }
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                        populateBreakdownSubcountyDropdown();
                         populateTableFilterSubcounties();
                     }
                     document.getElementById("syncStatus").textContent = `Connected (${scopeLabel})`;
@@ -1926,6 +2015,93 @@
             return records.filter(r => matchesCounty(r, countyName));
         }
 
+        function renderWardBreakdownStrip() {
+            const scoped = getCountyRecords(activeCountyName);
+            const isAllCounties = !activeCountyName || activeCountyName === "__ALL__";
+            const pillsContainer = document.getElementById("wardBreakdownPills");
+            const stripLabel = document.getElementById("breakdownStripLabel");
+            pillsContainer.innerHTML = "";
+
+            if (isAllCounties) {
+                if (activeBreakdownSubcounty) {
+                    stripLabel.textContent = `${activeBreakdownSubcounty} Ward Breakdown:`;
+                    const subRecords = scoped.filter(r => (r.subcounty || "").toLowerCase() === activeBreakdownSubcounty.toLowerCase());
+                    const matchingSubWards = [];
+                    kenyaCounties.forEach(c => {
+                        const sc = findSubcountyObj(c, activeBreakdownSubcounty);
+                        if (sc && Array.isArray(sc.ward)) {
+                            sc.ward.forEach(w => matchingSubWards.push(w.name.en));
+                        }
+                    });
+                    const recWards = subRecords.map(r => r.ward).filter(Boolean);
+                    const allWards = Array.from(new Set([...matchingSubWards, ...recWards]));
+                    if (allWards.length === 0) {
+                        pillsContainer.innerHTML = '<span class="ward-pill">No wards found for this sub-county</span>';
+                    } else {
+                        allWards.forEach(wName => {
+                            const cnt = subRecords.filter(r => r.ward === wName).length;
+                            pillsContainer.innerHTML += `<span class="ward-pill">${wName}: <strong>${cnt}</strong></span>`;
+                        });
+                    }
+                    return;
+                }
+
+                stripLabel.textContent = "Top Counties Breakdown:";
+                const countyCounts = {};
+                scoped.forEach(r => {
+                    const c = r.county || "Unspecified County";
+                    countyCounts[c] = (countyCounts[c] || 0) + 1;
+                });
+                const entries = Object.entries(countyCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+                if (entries.length === 0) {
+                    pillsContainer.innerHTML = '<span class="ward-pill">No records yet</span>';
+                } else {
+                    entries.forEach(([name, count]) => {
+                        pillsContainer.innerHTML += `<span class="ward-pill">${name}: <strong>${count}</strong></span>`;
+                    });
+                }
+                return;
+            }
+
+            const countyObj = findCountyObjByName(activeCountyName);
+
+            if (activeBreakdownSubcounty) {
+                stripLabel.textContent = `${activeCountyName} — ${activeBreakdownSubcounty} Ward Breakdown:`;
+                const subObj = findSubcountyObj(countyObj, activeBreakdownSubcounty);
+                const hierarchyWards = subObj && Array.isArray(subObj.ward)
+                    ? subObj.ward.map(w => w.name.en)
+                    : [];
+                const subScopedRecords = scoped.filter(r => (r.subcounty || "").toLowerCase() === activeBreakdownSubcounty.toLowerCase());
+                const recordWards = subScopedRecords.map(r => r.ward).filter(Boolean);
+                const displayWards = Array.from(new Set([...hierarchyWards, ...recordWards]));
+
+                if (displayWards.length === 0) {
+                    pillsContainer.innerHTML = '<span class="ward-pill">No wards available for this sub-county</span>';
+                } else {
+                    displayWards.forEach(wName => {
+                        const cnt = subScopedRecords.filter(r => r.ward === wName).length;
+                        pillsContainer.innerHTML += `<span class="ward-pill">${wName}: <strong>${cnt}</strong></span>`;
+                    });
+                }
+            } else {
+                stripLabel.textContent = `${activeCountyName} Ward Breakdown (All Sub-Counties):`;
+                const hierarchyWards = countyObj && Array.isArray(countyObj.subcounty)
+                    ? countyObj.subcounty.flatMap(sc => (sc.ward || []).map(w => w.name.en))
+                    : [];
+                const recordWards = scoped.map(r => r.ward).filter(Boolean);
+                const displayWards = Array.from(new Set([...hierarchyWards, ...recordWards]));
+
+                if (displayWards.length === 0) {
+                    pillsContainer.innerHTML = '<span class="ward-pill">No wards available</span>';
+                } else {
+                    displayWards.forEach(wName => {
+                        const cnt = scoped.filter(r => r.ward === wName).length;
+                        pillsContainer.innerHTML += `<span class="ward-pill">${wName}: <strong>${cnt}</strong></span>`;
+                    });
+                }
+            }
+        }
+
         function updateBannerAndKPIs() {
             const scoped = getCountyRecords(activeCountyName);
             const isAllCounties = !activeCountyName || activeCountyName === "__ALL__";
@@ -1950,43 +2126,7 @@
             document.getElementById("kpiCoverage").textContent = coverage + "%";
             document.getElementById("totalCountBadge").textContent = total;
 
-            const pillsContainer = document.getElementById("wardBreakdownPills");
-            const stripLabel = document.getElementById("breakdownStripLabel");
-            pillsContainer.innerHTML = "";
-
-            if (isAllCounties) {
-                stripLabel.textContent = "Top Counties Breakdown:";
-                const countyCounts = {};
-                scoped.forEach(r => {
-                    const c = r.county || "Unspecified County";
-                    countyCounts[c] = (countyCounts[c] || 0) + 1;
-                });
-                const entries = Object.entries(countyCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-                if (entries.length === 0) {
-                    pillsContainer.innerHTML = '<span class="ward-pill">No records yet</span>';
-                } else {
-                    entries.forEach(([name, count]) => {
-                        pillsContainer.innerHTML += `<span class="ward-pill">${name}: <strong>${count}</strong></span>`;
-                    });
-                }
-            } else {
-                stripLabel.textContent = `${activeCountyName} Ward Breakdown:`;
-                const countyObj = findCountyObjByName(activeCountyName);
-                const hierarchyWards = countyObj && Array.isArray(countyObj.subcounty)
-                    ? countyObj.subcounty.flatMap(sc => (sc.ward || []).map(w => w.name.en))
-                    : [];
-                const recordWards = scoped.map(r => r.ward).filter(Boolean);
-                const displayWards = Array.from(new Set([...hierarchyWards, ...recordWards])).slice(0, 12);
-
-                if (displayWards.length === 0) {
-                    pillsContainer.innerHTML = '<span class="ward-pill">No wards available</span>';
-                } else {
-                    displayWards.forEach(wName => {
-                        const cnt = scoped.filter(r => r.ward === wName).length;
-                        pillsContainer.innerHTML += `<span class="ward-pill">${wName}: <strong>${cnt}</strong></span>`;
-                    });
-                }
-            }
+            renderWardBreakdownStrip();
         }
 
         function getStatusPill(status) {
