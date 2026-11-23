@@ -1653,7 +1653,7 @@
                     if (pinPickerMap) {
                         pinPickerMap.setView([pos.coords.latitude, pos.coords.longitude], 17);
                     }
-                    msg.textContent = "Map centered on your location. Tap map to drop the #dc640d pin.";
+                    msg.textContent = "Map centered on your location. Tap map to drop the pin.";
                     msg.style.color = "var(--tocawi-green)";
                 },
                 (err) => {
@@ -2143,7 +2143,7 @@
 
             document.getElementById("dogName").focus();
             document.getElementById("gpsMsg").textContent =
-                `Saved ${record.dogName}! Location, Owner, GPS, Batch & Officer kept — enter next dog details.`;
+                `Saved ${record.dogName}! Location, Owner, GPS, Batch & Officer kept; enter next dog details.`;
         }
 
         function sendRecordToCloud(record) {
