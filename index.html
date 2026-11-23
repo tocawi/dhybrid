@@ -334,6 +334,9 @@
         .btn-header:hover { background-color: #f1f5f9; }
 
         .btn-header-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             background-color: transparent;
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.5);
@@ -1120,6 +1123,7 @@
             <div class="header-controls">
                 <span class="status-pill"><span class="dot"></span> <span id="syncStatus">Connected to Sheets DB</span></span>
                 <button type="button" class="btn-header-outline" onclick="triggerCountyRefresh()">&#8635; Refresh Data</button>
+                <a href="analysis.html" class="btn-header-outline">Analysis</a>
                 <button type="button" class="btn-header" onclick="exportCSV()">&#11015; Export CSV</button>
             </div>
         </div>
