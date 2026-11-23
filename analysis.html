@@ -706,10 +706,10 @@
         <div class="hero-banner">
             <div>
                 <h2 id="heroTitle">Rabies Vaccination Numbers &amp; Visual Analytics</h2>
-                <p id="heroSubtitle">Connected to ToCAWI Sheets DB &bull; Numbers, Pie Charts &amp; Bar Charts</p>
+                <p id="heroSubtitle">Viewing Analysis</p>
             </div>
             <div class="header-controls">
-                <span class="status-pill"><span class="dot"></span> <span id="syncStatus">Connecting to Sheets DB...</span></span>
+                <span class="status-pill"><span class="dot"></span> <span id="syncStatus">Connecting...</span></span>
                 <button type="button" class="btn-header-outline" onclick="fetchVaccinationData()">&#8635; Refresh</button>
                 <button type="button" class="btn-header" onclick="window.location.href='https://tocawi.github.io/dhybrid/'">Register / Vaccinate</button>
             </div>
@@ -729,7 +729,7 @@
             </div>
         </section>
 
-        <div id="loadingBanner" class="loading-banner">LOADING VACCINATION DATA FROM SHEETS DB...</div>
+        <div id="loadingBanner" class="loading-banner">LOADING VACCINATION DATA...</div>
 
         <!-- 1. Vaccination Numbers -->
         <section class="numbers-grid" aria-label="Vaccination Numbers">
@@ -1089,7 +1089,7 @@
         }
 
         function fetchVaccinationData() {
-            document.getElementById('syncStatus').textContent = 'Syncing Sheets DB...';
+            document.getElementById('syncStatus').textContent = 'Syncing...';
             fetch(SCRIPT_URL)
                 .then(res => res.json())
                 .then(payload => {
@@ -1099,13 +1099,13 @@
                     allRecords = normalizeRecords(rawRows);
                     localStorage.setItem(CACHE_KEY, JSON.stringify(allRecords));
 
-                    document.getElementById('syncStatus').textContent = `Sheets DB Synced (${allRecords.length})`;
+                    document.getElementById('syncStatus').textContent = `Synced (${allRecords.length})`;
                     document.getElementById('loadingBanner').style.display = 'none';
                     populateCountyOptions();
                     renderAllVisuals();
                 })
                 .catch(err => {
-                    console.error('Error fetching from Sheets DB:', err);
+                    console.error('Error fetching', err);
                     const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
                     allRecords = normalizeRecords(cached);
                     document.getElementById('syncStatus').textContent = `Cached Data (${allRecords.length})`;
