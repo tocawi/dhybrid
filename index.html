@@ -1498,6 +1498,13 @@
             updateHeaderOnScroll();
         });
 
+        function generateRecordId() {
+            if (window.crypto && typeof window.crypto.randomUUID === "function") {
+                return window.crypto.randomUUID();
+            }
+            return "rec-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9);
+        }
+
         function populateSelectOptions(selectEl, items, placeholder, useNameAsValue = true) {
             selectEl.replaceChildren(new Option(placeholder, ""));
             items.forEach(item => {
@@ -1824,13 +1831,13 @@
             }));
         }
 
-        function buildRecordFromForm() {
+        function buildRecordFromForm(forceNewRecord = false) {
             const locVal = document.getElementById("location").value;
             const finalLocation = locVal === "OTHER" ? document.getElementById("customLocation").value.trim() : locVal;
-            const existingId = document.getElementById("editingId").value;
+            const existingId = forceNewRecord ? "" : document.getElementById("editingId").value;
 
             return {
-                id: existingId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+                id: existingId || generateRecordId(),
                 county: document.getElementById("formCounty").value,
                 subcounty: document.getElementById("subcounty").value,
                 ward: document.getElementById("ward").value,
@@ -1851,6 +1858,15 @@
             };
         }
 
+        function ensureActiveCountyMatchesRecord(record) {
+            if (record.county && activeCountyName !== "__ALL__" && activeCountyName !== record.county) {
+                activeCountyName = record.county;
+                activeBreakdownSubcounty = "";
+                localStorage.setItem(SELECTED_COUNTY_KEY, activeCountyName);
+                document.getElementById("activeCountySelect").value = activeCountyName;
+            }
+        }
+
         function saveToStorage() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
             saveStickyFields();
@@ -1861,7 +1877,7 @@
 
         document.getElementById("campaignForm").addEventListener("submit", function (e) {
             e.preventDefault();
-            const record = buildRecordFromForm();
+            const record = buildRecordFromForm(false);
             const editingId = document.getElementById("editingId").value;
 
             if (editingId) {
@@ -1872,13 +1888,7 @@
                 records.unshift(record);
             }
 
-            if (record.county && activeCountyName !== "__ALL__" && activeCountyName !== record.county) {
-                activeCountyName = record.county;
-                activeBreakdownSubcounty = "";
-                localStorage.setItem(SELECTED_COUNTY_KEY, activeCountyName);
-                document.getElementById("activeCountySelect").value = activeCountyName;
-            }
-
+            ensureActiveCountyMatchesRecord(record);
             saveToStorage();
             resetFullForm();
             sendRecordToCloud(record);
@@ -1887,19 +1897,32 @@
 
         function saveAndAddAnotherDog() {
             const form = document.getElementById("campaignForm");
-            if (!form.checkValidity()) { form.reportValidity(); return; }
-            const record = buildRecordFromForm();
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Always create a brand-new database record with its own unique ID for each dog
+            document.getElementById("editingId").value = "";
+            const record = buildRecordFromForm(true);
             records.unshift(record);
+
+            ensureActiveCountyMatchesRecord(record);
             saveToStorage();
             sendRecordToCloud(record);
 
+            // Clear ONLY Section 3 per-dog details while preserving County, Sub-County, Ward,
+            // Location, Village/Landmark, Owner Name, Owner Contact, Homestead GPS,
+            // Vaccine Batch No. (Sticky), and Recorded By (Enumerator / Officer).
             document.getElementById("dogName").value = "";
             document.getElementById("dogDescription").value = "";
             document.getElementById("certificateNo").value = "";
             document.getElementById("vaccinationStatus").value = "Vaccinated";
             handleStatusChange();
+
             document.getElementById("dogName").focus();
-            document.getElementById("gpsMsg").textContent = "Saved! County, Owner & GPS kept for next dog.";
+            document.getElementById("gpsMsg").textContent =
+                `Saved ${record.dogName}! Location, Owner, GPS, Batch & Officer kept — enter next dog details.`;
         }
 
         function sendRecordToCloud(record) {
