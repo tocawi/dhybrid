@@ -664,6 +664,13 @@
         .gps-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px; flex-wrap: wrap; }
         .gps-top span { font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); }
 
+        .gps-btn-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
         .btn-gps {
             background-color: var(--tocawi-green);
             color: #ffffff;
@@ -674,8 +681,24 @@
             border-radius: 6px;
             cursor: pointer;
             white-space: nowrap;
+            transition: background 0.2s;
         }
         .btn-gps:hover { background-color: var(--tocawi-green-hover); }
+
+        .btn-pin {
+            background-color: var(--tocawi-orange);
+            color: #ffffff;
+            border: none;
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 6px 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .btn-pin:hover { background-color: var(--tocawi-orange-hover); }
+        .btn-pin.is-open { background-color: var(--dark); }
 
         .gps-coords {
             display: grid;
@@ -684,6 +707,51 @@
         }
         .gps-coords input { font-size: 0.78rem; padding: 7px 8px; font-family: monospace; min-width: 0; }
         .gps-msg { font-size: 0.71rem; color: var(--clr-text-muted); margin-top: 6px; }
+
+        /* Pop-Down Pin Picker Map */
+        .pin-map-drawer {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .pin-map-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-pin-sub {
+            background-color: #ffffff;
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-pin-sub:hover { background-color: #f1f5f9; }
+
+        #pinPickerMap {
+            height: 230px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            cursor: crosshair;
+            z-index: 1;
+        }
+
+        .custom-orange-pin {
+            background: transparent;
+            border: none;
+        }
 
         .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
         @media (min-width: 520px) { .btn-group { flex-direction: row; } }
@@ -1267,14 +1335,26 @@
                             <div class="gps-panel">
                                 <div class="gps-top">
                                     <span>Homestead GPS Coordinates <span class="req">*</span></span>
-                                    <button type="button" class="btn-gps" onclick="captureGPS()">&#128205; Capture GPS</button>
+                                    <div class="gps-btn-group">
+                                        <button type="button" class="btn-gps" onclick="captureGPS()">&#128205; Capture GPS</button>
+                                        <button type="button" id="btnTogglePinMap" class="btn-pin" onclick="togglePinPickerMap()">&#128506; Place Pin</button>
+                                    </div>
                                 </div>
                                 <div class="gps-coords">
-                                    <input type="text" id="latitude" required placeholder="Lat (-1.2921)" />
-                                    <input type="text" id="longitude" required placeholder="Lng (36.8219)" />
+                                    <input type="text" id="latitude" required placeholder="Lat (-1.2921)" oninput="syncPinFromInputs()" />
+                                    <input type="text" id="longitude" required placeholder="Lng (36.8219)" oninput="syncPinFromInputs()" />
                                     <input type="text" id="gpsAccuracy" readonly placeholder="Acc (m)" title="GPS accuracy in meters" />
                                 </div>
-                                <div id="gpsMsg" class="gps-msg">Tap Capture GPS while standing at the homestead.</div>
+                                <div id="gpsMsg" class="gps-msg">Tap Capture GPS or Place Pin on the map to set homestead coordinates.</div>
+
+                                <!-- Pop-Down Map for Pin Placement -->
+                                <div id="pinMapDrawer" class="pin-map-drawer hidden">
+                                    <div class="pin-map-toolbar">
+                                        <span>Click map or drag the <strong style="color:#dc640d;">#dc640d</strong> pin to capture coords</span>
+                                        <button type="button" class="btn-pin-sub" onclick="centerPinMapOnDevice()">Center on Me</button>
+                                    </div>
+                                    <div id="pinPickerMap"></div>
+                                </div>
                             </div>
 
                             <div class="section-tag">3. Dog &amp; Vaccination Details</div>
@@ -1444,6 +1524,145 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
         let markersLayer = L.layerGroup().addTo(map);
+
+        // Pin-Picker Pop-Down Map State
+        let pinPickerMap = null;
+        let pinPickerMarker = null;
+
+        const orangePinIcon = L.divIcon({
+            className: 'custom-orange-pin',
+            html: `<svg width="32" height="42" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 3px 5px rgba(0,0,0,0.38));">
+                <path d="M16 1C8.268 1 2 7.268 2 15C2 25.5 16 40 16 40C16 40 30 25.5 30 15C30 7.268 23.732 1 16 1Z" fill="#dc640d" stroke="#ffffff" stroke-width="2.2"/>
+                <circle cx="16" cy="15" r="5.5" fill="#ffffff"/>
+            </svg>`,
+            iconSize: [32, 42],
+            iconAnchor: [16, 40],
+            popupAnchor: [0, -38]
+        });
+
+        function togglePinPickerMap() {
+            const drawer = document.getElementById("pinMapDrawer");
+            const btn = document.getElementById("btnTogglePinMap");
+            const isHidden = drawer.classList.contains("hidden");
+
+            if (isHidden) {
+                drawer.classList.remove("hidden");
+                btn.classList.add("is-open");
+                btn.innerHTML = "&#10005; Hide Map";
+                initPinPickerMap();
+                setTimeout(() => {
+                    if (pinPickerMap) pinPickerMap.invalidateSize();
+                }, 120);
+            } else {
+                drawer.classList.add("hidden");
+                btn.classList.remove("is-open");
+                btn.innerHTML = "&#128506; Place Pin";
+            }
+        }
+
+        function initPinPickerMap() {
+            const existingLat = parseFloat(document.getElementById("latitude").value);
+            const existingLng = parseFloat(document.getElementById("longitude").value);
+            const hasCoords = !isNaN(existingLat) && !isNaN(existingLng);
+            const startLat = hasCoords ? existingLat : -1.2921;
+            const startLng = hasCoords ? existingLng : 36.8219;
+            const startZoom = hasCoords ? 16 : 7;
+
+            if (!pinPickerMap) {
+                pinPickerMap = L.map('pinPickerMap').setView([startLat, startLng], startZoom);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(pinPickerMap);
+
+                pinPickerMap.on('click', function (e) {
+                    setPinnedCoordinates(e.latlng.lat, e.latlng.lng, false);
+                });
+            } else {
+                pinPickerMap.setView([startLat, startLng], startZoom);
+            }
+
+            if (hasCoords) {
+                placeOrMoveOrangePin(existingLat, existingLng, false);
+            } else if (navigator.geolocation && !pinPickerMarker) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        if (pinPickerMap && !pinPickerMarker) {
+                            pinPickerMap.setView([pos.coords.latitude, pos.coords.longitude], 15);
+                        }
+                    },
+                    () => {},
+                    { enableHighAccuracy: true, timeout: 6000 }
+                );
+            }
+        }
+
+        function placeOrMoveOrangePin(lat, lng, panMap = false) {
+            if (!pinPickerMap) return;
+            if (!pinPickerMarker) {
+                pinPickerMarker = L.marker([lat, lng], {
+                    icon: orangePinIcon,
+                    draggable: true
+                }).addTo(pinPickerMap);
+
+                pinPickerMarker.on('dragend', function () {
+                    const pos = pinPickerMarker.getLatLng();
+                    setPinnedCoordinates(pos.lat, pos.lng, false);
+                });
+            } else {
+                pinPickerMarker.setLatLng([lat, lng]);
+            }
+
+            if (panMap) {
+                pinPickerMap.setView([lat, lng], Math.max(pinPickerMap.getZoom(), 15));
+            }
+        }
+
+        function setPinnedCoordinates(lat, lng, panMap = false) {
+            const formattedLat = Number(lat).toFixed(6);
+            const formattedLng = Number(lng).toFixed(6);
+
+            document.getElementById("latitude").value = formattedLat;
+            document.getElementById("longitude").value = formattedLng;
+            document.getElementById("gpsAccuracy").value = "Pin";
+
+            const msg = document.getElementById("gpsMsg");
+            msg.textContent = `Pinned coordinates captured (${formattedLat}, ${formattedLng}).`;
+            msg.style.color = "var(--tocawi-orange)";
+
+            placeOrMoveOrangePin(lat, lng, panMap);
+        }
+
+        function syncPinFromInputs() {
+            const lat = parseFloat(document.getElementById("latitude").value);
+            const lng = parseFloat(document.getElementById("longitude").value);
+            if (!isNaN(lat) && !isNaN(lng) && pinPickerMap) {
+                placeOrMoveOrangePin(lat, lng, true);
+            }
+        }
+
+        function centerPinMapOnDevice() {
+            const msg = document.getElementById("gpsMsg");
+            if (!navigator.geolocation) {
+                msg.textContent = "Geolocation is not supported on this device.";
+                msg.style.color = "var(--red)";
+                return;
+            }
+            msg.textContent = "Locating device on map...";
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    if (pinPickerMap) {
+                        pinPickerMap.setView([pos.coords.latitude, pos.coords.longitude], 17);
+                    }
+                    msg.textContent = "Map centered on your location. Tap map to drop the #dc640d pin.";
+                    msg.style.color = "var(--tocawi-green)";
+                },
+                (err) => {
+                    msg.textContent = "Unable to center map (" + err.message + ").";
+                    msg.style.color = "var(--red)";
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const siteHeader = document.getElementById('siteHeader');
@@ -1804,14 +2023,20 @@
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const acc = Math.round(pos.coords.accuracy);
-                    document.getElementById("latitude").value = pos.coords.latitude.toFixed(6);
-                    document.getElementById("longitude").value = pos.coords.longitude.toFixed(6);
+                    const lat = pos.coords.latitude.toFixed(6);
+                    const lng = pos.coords.longitude.toFixed(6);
+                    document.getElementById("latitude").value = lat;
+                    document.getElementById("longitude").value = lng;
                     document.getElementById("gpsAccuracy").value = acc + "m";
                     msg.textContent = "GPS locked (+/- " + acc + "m accuracy).";
                     msg.style.color = acc <= 25 ? "var(--tocawi-green)" : "var(--tocawi-orange)";
+
+                    if (pinPickerMap) {
+                        placeOrMoveOrangePin(parseFloat(lat), parseFloat(lng), true);
+                    }
                 },
                 (err) => {
-                    msg.textContent = "GPS unavailable (" + err.message + "). Enter manually.";
+                    msg.textContent = "GPS unavailable (" + err.message + "). Use Place Pin or enter manually.";
                     msg.style.color = "var(--red)";
                 },
                 { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
@@ -1902,7 +2127,6 @@
                 return;
             }
 
-            // Always create a brand-new database record with its own unique ID for each dog
             document.getElementById("editingId").value = "";
             const record = buildRecordFromForm(true);
             records.unshift(record);
@@ -1911,9 +2135,6 @@
             saveToStorage();
             sendRecordToCloud(record);
 
-            // Clear ONLY Section 3 per-dog details while preserving County, Sub-County, Ward,
-            // Location, Village/Landmark, Owner Name, Owner Contact, Homestead GPS,
-            // Vaccine Batch No. (Sticky), and Recorded By (Enumerator / Officer).
             document.getElementById("dogName").value = "";
             document.getElementById("dogDescription").value = "";
             document.getElementById("certificateNo").value = "";
@@ -1975,6 +2196,10 @@
             const prevCounty = document.getElementById("formCounty").value || (activeCountyName !== "__ALL__" ? activeCountyName : "");
             document.getElementById("campaignForm").reset();
             document.getElementById("editingId").value = "";
+            if (pinPickerMarker && pinPickerMap) {
+                pinPickerMap.removeLayer(pinPickerMarker);
+                pinPickerMarker = null;
+            }
             if (prevCounty) {
                 document.getElementById("formCounty").value = prevCounty;
                 handleFormCountyChange();
@@ -2003,6 +2228,13 @@
             document.getElementById("latitude").value = rec.latitude;
             document.getElementById("longitude").value = rec.longitude;
             document.getElementById("gpsAccuracy").value = rec.gpsAccuracy || "";
+
+            const lat = parseFloat(rec.latitude);
+            const lng = parseFloat(rec.longitude);
+            if (!isNaN(lat) && !isNaN(lng) && pinPickerMap) {
+                placeOrMoveOrangePin(lat, lng, true);
+            }
+
             document.getElementById("dogName").value = rec.dogName;
             document.getElementById("dogDescription").value = rec.dogDescription;
             document.getElementById("vaccinationStatus").value = rec.vaccinationStatus;
